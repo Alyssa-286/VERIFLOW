@@ -1,0 +1,13 @@
+rule,T,best_predictor
+adam,0.5,CGF
+adam,2.0,CGF
+adam,8.0,CGF
+adam,32.0,kappa3
+npg,0.5,CGF
+npg,2.0,CGF
+npg,8.0,CGF
+npg,32.0,CGF
+vpg,0.5,fmax+V
+vpg,2.0,fmax+V
+vpg,8.0,fmax+V
+vpg,32.0,V

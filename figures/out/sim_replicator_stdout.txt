@@ -1,0 +1,50 @@
+[sweep] M=3 alpha=0.3 Fbar=0.2 done (5 families)
+[sweep] M=3 alpha=0.3 Fbar=0.2 done (10 families)
+[sweep] M=3 alpha=0.3 Fbar=0.4 done (15 families)
+[sweep] M=3 alpha=0.3 Fbar=0.4 done (20 families)
+[sweep] M=3 alpha=1.0 Fbar=0.2 done (25 families)
+[sweep] M=3 alpha=1.0 Fbar=0.2 done (30 families)
+[sweep] M=3 alpha=1.0 Fbar=0.4 done (35 families)
+[sweep] M=3 alpha=1.0 Fbar=0.4 done (40 families)
+[sweep] M=3 alpha=5.0 Fbar=0.2 done (45 families)
+[sweep] M=3 alpha=5.0 Fbar=0.2 done (50 families)
+[sweep] M=3 alpha=5.0 Fbar=0.4 done (55 families)
+[sweep] M=3 alpha=5.0 Fbar=0.4 done (60 families)
+[sweep] M=5 alpha=0.3 Fbar=0.2 done (65 families)
+[sweep] M=5 alpha=0.3 Fbar=0.2 done (70 families)
+[sweep] M=5 alpha=0.3 Fbar=0.4 done (75 families)
+[sweep] M=5 alpha=0.3 Fbar=0.4 done (80 families)
+[sweep] M=5 alpha=1.0 Fbar=0.2 done (85 families)
+[sweep] M=5 alpha=1.0 Fbar=0.2 done (90 families)
+[sweep] M=5 alpha=1.0 Fbar=0.4 done (95 families)
+[sweep] M=5 alpha=1.0 Fbar=0.4 done (100 families)
+[sweep] M=5 alpha=5.0 Fbar=0.2 done (105 families)
+[sweep] M=5 alpha=5.0 Fbar=0.2 done (110 families)
+[sweep] M=5 alpha=5.0 Fbar=0.4 done (115 families)
+[sweep] M=5 alpha=5.0 Fbar=0.4 done (120 families)
+[sweep] M=8 alpha=0.3 Fbar=0.2 done (125 families)
+[sweep] M=8 alpha=0.3 Fbar=0.2 done (130 families)
+[sweep] M=8 alpha=0.3 Fbar=0.4 done (135 families)
+[sweep] M=8 alpha=0.3 Fbar=0.4 done (140 families)
+[sweep] M=8 alpha=1.0 Fbar=0.2 done (145 families)
+[sweep] M=8 alpha=1.0 Fbar=0.2 done (150 families)
+[sweep] M=8 alpha=1.0 Fbar=0.4 done (155 families)
+[sweep] M=8 alpha=1.0 Fbar=0.4 done (160 families)
+[sweep] M=8 alpha=5.0 Fbar=0.2 done (165 families)
+[sweep] M=8 alpha=5.0 Fbar=0.2 done (170 families)
+[sweep] M=8 alpha=5.0 Fbar=0.4 done (175 families)
+[sweep] M=8 alpha=5.0 Fbar=0.4 done (180 families)
+predictor    CGF      V   V_q2   fmax  fmax+V  fmax+trigger  kappa3  null(intercept)  trigger
+rule T                                                                                       
+adam 0.5   0.396  0.434  0.486  0.603   0.399         0.646   0.703            1.052    1.060
+     2.0   0.305  0.390  0.459  0.598   0.354         0.627   0.517            1.052    1.062
+     8.0   0.366  0.527  0.690  0.697   0.524         0.681   0.366            1.052    1.065
+     32.0  0.673  0.854  0.960  0.854   0.813         0.896   0.626            1.052    1.069
+npg  0.5   0.000  0.000  0.045  0.381   0.000         0.402   0.535            1.052    1.065
+     2.0   0.000  0.007  0.066  0.353   0.006         0.373   0.472            1.052    1.062
+     8.0   0.001  0.076  0.176  0.248   0.040         0.245   0.314            1.052    1.046
+     32.0  0.003  0.227  0.367  0.076   0.041         0.063   0.431            1.052    1.027
+vpg  0.5   0.790  0.893  1.010  0.808   0.783         0.936   0.794            1.052    1.106
+     2.0   0.848  0.980  0.988  0.890   0.787         1.017   0.895            1.052    1.130
+     8.0   0.419  0.408  0.290  0.859   0.282         1.015   1.015            1.052    1.122
+     32.0  0.092  0.090  0.126  0.449   0.098         0.492   0.495            1.052    1.055

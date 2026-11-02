@@ -1,0 +1,7 @@
+{
+  "payload": {
+    "sha256": "a5962ac0a68602d90a3311a65230ca2720d9e55aa30ea3136173736f183c93b4",
+    "template": "Compute {a} + {b}.\nYou may show brief working. On the last line, write the final answer exactly in the form\nAnswer: <integer>"
+  },
+  "sha256": "13680a22f60fa668baa3e029ef76bd726c5b915b3e54f8f901c3fd33a3b06d1b"
+}

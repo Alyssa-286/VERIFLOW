@@ -46,3 +46,11 @@ Taxonomy v1, parser, splits and noisy verifier are implemented and tested. Synth
 ## D2: Task choice. 2026-10-31
 
 The task is two-operand integer addition, not ETH's decimal chain-sum. The reason is construct validity of the deterministic taxonomy. Direct numerical comparison with Egashira et al. is therefore not possible; a replication of one of their configurations is an extended-design item.
+
+## D7: Phase 4 tooling complete (CPU-verified); cluster policy surveyed read-only. 2026-11-02
+
+**Implemented and tested:** census core + watchdog-free orchestration (`experiments/census_core.py`, `experiments/base_mode_census.py`, mock backend for CPU end-to-end runs), §9.3 gate evaluator (`experiments/check_construct_gate.py`, refuses to freeze mock data), manifest machinery (`scripts/manifest_lib.py` etc., schema-tested), preflight/gpucheck (`scripts/preflight.py`, `scripts/gpucheck.py`, slurm/preflight.sbatch, slurm/gpucheck.sbatch), census sbatch, isolation guard (`scripts/preflight.check_isolation`, `tests/test_isolation.py`). `configs/model/*.yaml` pin Qwen2.5-0.5B-Instruct @ `7ae557604adf67be50417f59c2c2f167def9a775` and Qwen2.5-1.5B-Instruct @ `989aa7980e4cf806f80c7fef2b1adb7bc71aa306` (both verified against the HF API on 2026-11-02, Apache-2.0). `configs/locked/prompt.lock` + `taxonomy.lock` payload hashes recorded. GPU-versions of deps (torch≥2.6, transformers≥4.56.2) live in the `gpu` dependency group; TRL/vLLM wait for Phase 5.
+
+**Cluster survey (read-only only, no job submitted):** see `docs/CLUSTER_POLICY.md`. Node sit-gpu has 2 GPUs, 96 CPUs, 515 GB RAM, MaxTime infinite. One GPU was held by the user's own `p12-exploratory` job; VERIFLOW arrays therefore throttle to `%1`. GPUs' driver version and bf16 support are gated on `veriflow-gpucheck`, not assumed.
+
+**Not yet done (needs the cluster):** the real census for n=5..10, the q_ref.lock freeze, and the manual audit (§9.3.6). Gate 3 remains open.

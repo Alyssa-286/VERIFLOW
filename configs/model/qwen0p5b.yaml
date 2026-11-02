@@ -1,0 +1,7 @@
+# Primary model (master plan §11, §16.5). Revision verified against the
+# Hugging Face API on 2026-11-02; licence Apache-2.0.
+repo: Qwen/Qwen2.5-0.5B-Instruct
+revision: 7ae557604adf67be50417f59c2c2f167def9a775
+tokenizer_revision: 7ae557604adf67be50417f59c2c2f167def9a775
+dtype: bfloat16
+# Roles: census + base policy + all 0.5B training runs.

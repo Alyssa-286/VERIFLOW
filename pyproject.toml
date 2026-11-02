@@ -7,11 +7,23 @@ dependencies = [
     "numpy>=1.26",
     "scipy>=1.11",
     "pandas>=2.1",
+    "pyarrow>=15",
     "matplotlib>=3.8",
 ]
 
 [dependency-groups]
 dev = ["pytest>=8", "hypothesis>=6.100"]
+# GPU environment for Phase 4 (cluster census) — master plan §16.5.
+# TRL/peft/vLLM are Phase 5 (Gate 4) and are deliberately NOT locked yet.
+# torch floor satisfies TRL 1.17.x's requirement (torch>=2.6);
+# transformers floor likewise (>=4.56.2). Exact versions are frozen by `uv lock`.
+# Sync on the cluster with: uv sync --group gpu --frozen
+gpu = [
+    "torch>=2.6,<2.9",
+    "transformers>=4.56.2,<5",
+    "accelerate>=1.11",
+    "huggingface-hub>=0.34",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

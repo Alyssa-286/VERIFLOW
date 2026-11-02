@@ -1,0 +1,10 @@
+{
+  "_comment": "Mock smoke policy for --backend mock. Designed/error ≈ 0.95; CARRY omitted (see experiments/mock_policy.py docstring).",
+  "C": 0.55,
+  "ECHO": 0.08,
+  "TRUNC": 0.12,
+  "TRANS": 0.08,
+  "DIGIT": 0.10,
+  "U": 0.02,
+  "I": 0.0
+}

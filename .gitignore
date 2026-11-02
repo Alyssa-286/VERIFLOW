@@ -2,7 +2,11 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.hypothesis/
+.tmp/
+.freebuff/
 runs/
 checkpoints/
 .cache/
+manifests/
 data/*.parquet

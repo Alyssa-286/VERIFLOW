@@ -1,0 +1,24 @@
+{
+  "payload": {
+    "designed_modes": [
+      "ECHO",
+      "CARRY",
+      "TRUNC",
+      "TRANS",
+      "DIGIT"
+    ],
+    "priority": [
+      "C",
+      "I",
+      "ECHO",
+      "CARRY",
+      "TRUNC",
+      "TRANS",
+      "DIGIT",
+      "U"
+    ],
+    "spec": "docs/VERIFLOW_MASTER_PLAN.md \u00a79.2",
+    "version": "v1"
+  },
+  "sha256": "6cb805f882f0e38971d65fd30fe20551af47672db3b6111d120efdf046aa0381"
+}

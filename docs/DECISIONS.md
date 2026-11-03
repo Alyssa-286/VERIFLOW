@@ -117,3 +117,13 @@ Approved by the researcher after D12.
 - Synthetic recovery ≥ 99 % for every designed mode at n = 5, 8 (`tests/test_subtraction.py`).
 - Unchanged: sampling, 2,000 × 4 per n, n = 5…10, every §9.3 threshold and the §9.1 selection rule. Run ids: `n<N>_sub_p2t2_s20261102_j<job>`.
 - Known risk, predeclared: a single dropped borrow is also a one-digit slip, so BORROW∩DIGIT ambiguity is expected (as CARRY∩DIGIT was).
+
+## D14: Gate 3 verdict: STOP (§9.3 kill rule). Phase 4 closed. 2026-11-03
+
+Subtraction census jobs 3627–3632 (commit `36de395`, preflight 3626) all completed and verified. Every n fails, with base accuracy 0.013–0.150, coverage 0.05–0.38, at most 2 designed modes ≥ 5 % (DIGIT, BORROW), ambiguity 0.13–0.17 and U 0.55–0.90. About 99.6 % of U errors match none of the OPSWAP/NEG/SFL diagnostics.
+
+Across all 24 real censuses (addition ×3 configurations, subtraction ×1; n = 5…10) no n has 3 designed modes at ≥ 5 % mass. Ladder step 3 (M = 3) is unreachable. The §9.3 stop condition holds: **the matched-heterogeneity design cannot be built on Qwen2.5-0.5B-Instruct with two-operand integer addition/subtraction under the predeclared taxonomy.** This is the plan's kill rule (§27), not a tooling failure: split-half TV ≤ 0.022 everywhere, so the q estimates are stable.
+
+Consequences: no `q_ref.lock`, no manual audit, Phase 5 (GRPO) does not start on this design. Any continuation is a new pre-registered design, e.g. a different base model (the pinned 1.5B replication model), a different task, or a revised §9.3. It must be logged as a protocol amendment before any data are collected.
+
+Total compute for Phase 4: 24 censuses, 6 preflights and 2 GPU checks, about 0.3 GPU-h on one L40.

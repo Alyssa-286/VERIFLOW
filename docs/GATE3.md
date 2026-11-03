@@ -1,16 +1,21 @@
 # Gate 3: construct validity (Phase 4 exit)
 
-**Status: ✗ FAILED. Phase 4 is complete; Gate 3 does not pass. 2026-11-03.**
-Eighteen real GPU censuses (Qwen2.5-0.5B-Instruct @ `7ae557604adf67be50417f59c2c2f167def9a775`,
-n = 5…10, 2,000 prompts × 4 samples each) were run in three configurations:
-prompt v1 / taxonomy v1, prompt v2 / taxonomy v1, and prompt v2 / taxonomy v2.
-None passes the automated §9.3 gate. In the final configuration the format
-problem is gone (`I` ≤ 3 %), and what remains is a construct failure: most
-errors match no designed mode (`U` = 55–97 %), and **no n has 3 designed modes
-at ≥ 5 % mass**. No n is selected. **`configs/locked/q_ref.lock` is not
-frozen. No manual audit was exported**, because the audit is defined on the
-selected census. Phase 5 must not start. The only ladder step left before the
-§9.3 stop rule is 2-operand subtraction (DECISIONS.md D12).
+**Status: ✗ FAILED. §9.3 stop rule reached. Phase 4 is complete. 2026-11-03.**
+Twenty-four real GPU censuses (Qwen2.5-0.5B-Instruct @ `7ae557604adf67be50417f59c2c2f167def9a775`,
+n = 5…10, 2,000 prompts × 4 samples each) were run through every permitted
+ladder step:
+- addition with prompt v1 / taxonomy v1;
+- addition with prompt v2 / taxonomy v1;
+- addition with prompt v2 / taxonomy v2;
+- subtraction (ladder step 2, D13).
+
+None passes the automated §9.3 gate. At no n, for either task, do 3 designed
+modes reach 5 % mass. Errors are dominated by `U`, the unstructured class
+(55–97 %). Ladder step 3 (accept M = 3) is therefore unreachable, and the
+predeclared stop condition holds: **the matched-heterogeneity design cannot
+be built on this model and task (§9.3)**. No n is selected. **`configs/locked/q_ref.lock`
+is not frozen, and no manual audit was exported.** Phase 5 must not start on
+this design (DECISIONS.md D14).
 
 ## What runs the gate
 
@@ -132,7 +137,7 @@ reach the [0.25, 0.60] window at n = 5. Accepting them is a taxonomy change
 (v2), which by §9.2 invalidates every census so far, so it was not done
 without a decision.
 
-## Results: prompt v2 + taxonomy v2 (final), 2026-11-03
+## Results: prompt v2 + taxonomy v2 (addition, final), 2026-11-03
 
 Commit `47fa0d2`, preflight 3618 (132 tests green, synthetic recovery included).
 Sampling is identical to the earlier runs. Evidence:
@@ -159,15 +164,40 @@ revision, template hash).
 - Split-half TV (≤ 0.022) passes everywhere, so these q estimates are stable:
   the failure is real, not noise.
 
+## Results: subtraction (ladder step 2), 2026-11-03
+
+`a − b`, a > b, prompt `Compute {a} - {b}.` (v2 wording), taxonomy `sub-v1`
+(BORROW in CARRY's place), taxonomy-v2 parser, max_new_tokens 256. Commit
+`36de395`, preflight 3626 (146 tests green, subtraction synthetic recovery
+≥ 99 % for every designed mode at n = 5, 8). Each job took 27–39 s and ≤ 2.5 GB
+of VRAM. All six runs were verified. Evidence:
+[gate3_census_comparison_sub.json](gate3_census_comparison_sub.json).
+
+| n | Run ID (Slurm job) | Base acc | q BORROW [95% CI] | q DIGIT [95% CI] | q ECHO [95% CI] | q TRANS [95% CI] | q TRUNC [95% CI] | q U [95% CI] | q I [95% CI] | Coverage | Modes ≥5% | Ambiguity | Split-half TV | Gate |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 5 | `n5_sub_p2t2_s20261102_j3627` (3627) | 0.150 | 0.095 [0.086, 0.104] | 0.283 [0.268, 0.298] | 0.000 [0.000, 0.000] | 0.001 [0.000, 0.002] | 0.004 [0.002, 0.006] | 0.554 [0.538, 0.570] | 0.064 [0.058, 0.070] | 0.383 | 2 | 0.171 | 0.0218 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 6 | `n6_sub_p2t2_s20261102_j3628` (3628) | 0.105 | 0.078 [0.071, 0.086] | 0.230 [0.217, 0.243] | 0.000 [0.000, 0.001] | 0.001 [0.000, 0.002] | 0.001 [0.000, 0.003] | 0.647 [0.632, 0.661] | 0.042 [0.037, 0.047] | 0.311 | 2 | 0.160 | 0.0185 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 7 | `n7_sub_p2t2_s20261102_j3629` (3629) | 0.083 | 0.045 [0.039, 0.052] | 0.138 [0.128, 0.147] | 0.000 [0.000, 0.001] | 0.000 [0.000, 0.001] | 0.004 [0.002, 0.006] | 0.771 [0.760, 0.782] | 0.041 [0.037, 0.046] | 0.187 | 1 | 0.140 | 0.0145 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 8 | `n8_sub_p2t2_s20261102_j3630` (3630) | 0.053 | 0.028 [0.024, 0.032] | 0.093 [0.085, 0.100] | 0.000 [0.000, 0.001] | 0.001 [0.000, 0.001] | 0.003 [0.002, 0.004] | 0.830 [0.820, 0.839] | 0.046 [0.041, 0.051] | 0.125 | 1 | 0.127 | 0.0083 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 9 | `n9_sub_p2t2_s20261102_j3631` (3631) | 0.041 | 0.024 [0.021, 0.028] | 0.067 [0.060, 0.073] | 0.000 [0.000, 0.001] | 0.000 [0.000, 0.001] | 0.003 [0.002, 0.004] | 0.854 [0.845, 0.863] | 0.051 [0.046, 0.056] | 0.095 | 1 | 0.149 | 0.0058 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 10 | `n10_sub_p2t2_s20261102_j3632` (3632) | 0.013 | 0.010 [0.008, 0.012] | 0.034 [0.029, 0.039] | 0.001 [0.000, 0.002] | 0.000 [0.000, 0.001] | 0.004 [0.002, 0.005] | 0.897 [0.890, 0.904] | 0.054 [0.049, 0.059] | 0.049 | 0 | 0.126 | 0.0087 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+
+- Base accuracy is 0.150 at n = 5 and falls with n, so it is below the
+  [0.25, 0.60] window everywhere. Only DIGIT and BORROW ever reach 5 %, and
+  ambiguity is 0.13–0.17 (BORROW∩DIGIT, as predeclared in D13).
+- The U-only diagnostics explain almost none of `U`: about 99.6 % of `U`
+  errors match none of OPSWAP (a+b), NEG (b−a) or SFL. The errors are not a
+  known structured mechanism the taxonomy is missing.
+
 ## Failure ladder (§9.3): where it stands
 
 | Step | Status |
 |---|---|
-| 1. different n | done: fails at all n = 5…10 (all three configurations) |
+| 1. different n | done: fails at all n = 5…10 (all addition configurations) |
 | 1. answer-only prompt | done: prompt v2 (D9), plus taxonomy v2 parse fix (D11); fails |
-| 2. 2-operand subtraction | **not run**: needs a subtraction taxonomy (borrow rule etc.) that the plan does not specify |
-| 3. accept M = 3 modes | **not reachable**: at most 2 designed modes reach 5 % at any n |
-| 4. stop if < 3 designed modes reach 5 % | **condition holds for addition at every n** |
+| 2. 2-operand subtraction | done (D13): fails at all n; ≤ 2 designed modes at 5 % |
+| 3. accept M = 3 modes | **unreachable**: at most 2 designed modes reach 5 % for either task at any n |
+| 4. stop if < 3 designed modes reach 5 % | **TRIGGERED**: Gate 3 verdict is STOP (D14) |
 
 ## Manual audit tooling (ready, unused)
 

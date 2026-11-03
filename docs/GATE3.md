@@ -1,13 +1,16 @@
 # Gate 3: construct validity (Phase 4 exit)
 
-**Status: ✗ FAILED at ladder step 1, both options exhausted, 2026-11-03.**
-Twelve real GPU censuses (Qwen2.5-0.5B-Instruct @ `7ae557604adf67be50417f59c2c2f167def9a775`,
-n = 5…10, 2,000 prompts × 4 samples each) were run: six with prompt v1 and six
-with the answer-only prompt v2 (D9). All fail the automated §9.3 gate and the
-§9.1 accuracy window. **No n is selected. `configs/locked/q_ref.lock` is not
+**Status: ✗ FAILED. Phase 4 is complete; Gate 3 does not pass. 2026-11-03.**
+Eighteen real GPU censuses (Qwen2.5-0.5B-Instruct @ `7ae557604adf67be50417f59c2c2f167def9a775`,
+n = 5…10, 2,000 prompts × 4 samples each) were run in three configurations:
+prompt v1 / taxonomy v1, prompt v2 / taxonomy v1, and prompt v2 / taxonomy v2.
+None passes the automated §9.3 gate. In the final configuration the format
+problem is gone (`I` ≤ 3 %), and what remains is a construct failure: most
+errors match no designed mode (`U` = 55–97 %), and **no n has 3 designed modes
+at ≥ 5 % mass**. No n is selected. **`configs/locked/q_ref.lock` is not
 frozen. No manual audit was exported**, because the audit is defined on the
-selected census and there isn't one. What comes next is a researcher decision
-(DECISIONS.md D10).
+selected census. Phase 5 must not start. The only ladder step left before the
+§9.3 stop rule is 2-operand subtraction (DECISIONS.md D12).
 
 ## What runs the gate
 
@@ -40,7 +43,7 @@ q_ref.json SHA-256.
 | 6 | Manual audit of 200 errors, disagreement ≤ 5 % | human | `audit_sample.csv` for the selected census |
 | §9.1 | Base accuracy (temperature 1.0) in [0.25, 0.60] to choose n | automatic, per n | census report |
 
-## Results: real census, 2026-11-03 (SIT HPC, NVIDIA L40, bf16)
+## Results: prompt v1 + taxonomy v1, 2026-11-03 (SIT HPC, NVIDIA L40, bf16)
 
 Sampling: T = 1.0, top_p = 1.0, top_k = 0, repetition_penalty = 1.0 (Qwen's
 shipped 1.1 overridden), max_new_tokens = 128, seed 20261102, 2,000-bootstrap
@@ -91,7 +94,7 @@ only the parquet type of the parsed answer changed.
   is unlikely to be enough at n ≥ 6.
 - **Ambiguity 0.12–0.18 > 0.10**, driven by CARRY∩DIGIT, as D6 predicted.
 
-## Results: prompt v2 (answer-only), 2026-11-03
+## Results: prompt v2 (answer-only) + taxonomy v1, 2026-11-03
 
 Template `Compute {a} + {b}.` / `Reply with only the final answer, exactly in the form` /
 `Answer: <integer>` with max_new_tokens = 256. Everything else is identical to
@@ -129,19 +132,42 @@ reach the [0.25, 0.60] window at n = 5. Accepting them is a taxonomy change
 (v2), which by §9.2 invalidates every census so far, so it was not done
 without a decision.
 
-## Failure ladder (§9.3) and next step
+## Results: prompt v2 + taxonomy v2 (final), 2026-11-03
 
-1. ~~different n~~ and ~~answer-only prompt~~: **both exhausted (tables above)**.
-2. 2-operand subtraction.
-3. Accept M = 3 modes.
-4. Stop if fewer than 3 designed modes reach 5 % mass.
+Commit `47fa0d2`, preflight 3618 (132 tests green, synthetic recovery included).
+Sampling is identical to the earlier runs. Evidence:
+[gate3_census_comparison_p2t2.json](gate3_census_comparison_p2t2.json).
+Each job took 23–35 s of generation and ≤ 2.5 GB of VRAM. All six runs were
+verified (artifacts, q normalisation, CIs, re-derived statistics, pinned
+revision, template hash).
 
-The next literal ladder step is subtraction. With either prompt, though, the
-dominant failure is answer formatting, not the arithmetic task, so subtraction
-under the same prompts would very likely fail the same way. Choosing between
-subtraction, a taxonomy v2 that accepts a bare-integer completion, or the stop
-rule is a protocol decision left to the researcher (DECISIONS.md D10). A full
-six-n sweep costs about 5 GPU-minutes.
+| n | Run ID (Slurm job) | Base acc | q ECHO [95% CI] | q CARRY [95% CI] | q TRUNC [95% CI] | q TRANS [95% CI] | q DIGIT [95% CI] | q U [95% CI] | q I [95% CI] | Coverage | Modes ≥5% | Ambiguity | Split-half TV | Gate |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 5 | `n5_p2t2_s20261102_j3620` (3620) | 0.344 | 0.000 [0.000, 0.000] | 0.120 [0.106, 0.134] | 0.000 [0.000, 0.000] | 0.001 [0.000, 0.002] | 0.295 [0.277, 0.313] | 0.552 [0.532, 0.571] | 0.032 [0.027, 0.037] | 0.416 | 2 | 0.235 | 0.0219 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity) |
+| 6 | `n6_p2t2_s20261102_j3621` (3621) | 0.136 | 0.000 [0.000, 0.000] | 0.052 [0.045, 0.060] | 0.001 [0.000, 0.002] | 0.002 [0.001, 0.004] | 0.205 [0.190, 0.218] | 0.720 [0.705, 0.736] | 0.020 [0.016, 0.023] | 0.260 | 2 | 0.156 | 0.0185 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 7 | `n7_p2t2_s20261102_j3622` (3622) | 0.052 | 0.000 [0.000, 0.000] | 0.025 [0.020, 0.030] | 0.001 [0.000, 0.002] | 0.000 [0.000, 0.001] | 0.116 [0.106, 0.125] | 0.838 [0.827, 0.849] | 0.020 [0.016, 0.023] | 0.143 | 1 | 0.143 | 0.0183 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 8 | `n8_p2t2_s20261102_j3623` (3623) | 0.021 | 0.000 [0.000, 0.000] | 0.011 [0.009, 0.014] | 0.001 [0.000, 0.002] | 0.001 [0.000, 0.002] | 0.061 [0.054, 0.068] | 0.904 [0.895, 0.912] | 0.022 [0.019, 0.026] | 0.074 | 1 | 0.110 | 0.0134 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 9 | `n9_p2t2_s20261102_j3624` (3624) | 0.011 | 0.000 [0.000, 0.000] | 0.007 [0.005, 0.009] | 0.000 [0.000, 0.000] | 0.000 [0.000, 0.000] | 0.033 [0.028, 0.038] | 0.943 [0.937, 0.949] | 0.016 [0.013, 0.019] | 0.040 | 0 | 0.122 | 0.0045 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+| 10 | `n10_p2t2_s20261102_j3625` (3625) | 0.003 | 0.000 [0.000, 0.000] | 0.002 [0.001, 0.004] | 0.000 [0.000, 0.001] | 0.000 [0.000, 0.001] | 0.013 [0.010, 0.016] | 0.965 [0.960, 0.969] | 0.020 [0.016, 0.023] | 0.015 | 0 | 0.106 | 0.0059 | FAIL (9.3.1 coverage, 9.3.2 mass, 9.3.3 ambiguity, 9.1 base accuracy window) |
+
+- **n = 5** is the only n inside the §9.1 accuracy window (0.344), but it fails
+  coverage (0.416 < 0.70), mass (2 designed modes ≥ 5 %: DIGIT 0.295, CARRY
+  0.120) and ambiguity (0.235 > 0.10, CARRY∩DIGIT, as D6 predicted). Merging
+  CARRY∪DIGIT as §9.3.3 prescribes would leave **one** designed mode.
+- ECHO, TRUNC and TRANS are ≤ 0.002 at every n: the model does not make those
+  errors. Rising n moves mass into `U`, not into designed modes.
+- Split-half TV (≤ 0.022) passes everywhere, so these q estimates are stable:
+  the failure is real, not noise.
+
+## Failure ladder (§9.3): where it stands
+
+| Step | Status |
+|---|---|
+| 1. different n | done: fails at all n = 5…10 (all three configurations) |
+| 1. answer-only prompt | done: prompt v2 (D9), plus taxonomy v2 parse fix (D11); fails |
+| 2. 2-operand subtraction | **not run**: needs a subtraction taxonomy (borrow rule etc.) that the plan does not specify |
+| 3. accept M = 3 modes | **not reachable**: at most 2 designed modes reach 5 % at any n |
+| 4. stop if < 3 designed modes reach 5 % | **condition holds for addition at every n** |
 
 ## Manual audit tooling (ready, unused)
 

@@ -95,3 +95,13 @@ Approved by the researcher after D10. **Chosen after seeing the prompt-v2 output
 - Unchanged: classes, priority, every error-mode rule, multi-hot ambiguity, gate thresholds, prompt v2, max_new_tokens 256, sampling, split and seed.
 - `TAXONOMY_VERSION = v2`; `taxonomy.lock` payload sha256 `f4bf0f24…eb575d`. All v1-taxonomy censuses are invalid for selection and are kept as evidence. Synthetic recovery (§9.3.5) was rerun: green.
 - Fresh GPU census runs: `n<N>_p2t2_s20261102_j<job>`.
+
+## D12: Phase 4 complete; Gate 3 FAILS; q_ref NOT frozen. 2026-11-03
+
+Final configuration: prompt v2 + taxonomy v2, jobs 3620–3625 (commit `47fa0d2`, preflight 3618). All six runs were verified, and none passes. The only n inside the §9.1 window is n = 5 (acc 0.344). It has coverage 0.416, 2 designed modes ≥ 5 % (DIGIT 0.295, CARRY 0.120) and ambiguity 0.235, with U = 0.552. U rises to 0.965 at n = 10. ECHO/TRUNC/TRANS are ≤ 0.002 everywhere. Split-half TV ≤ 0.022, so the estimates are stable and the failure is real.
+
+**Gate 3 verdict: FAIL.** No n is selected, `q_ref.lock` is not written and no audit was exported. Phase 5 (GRPO) must not start on this design.
+
+Ladder position: step 1 is exhausted. Step 3 (M = 3) is unreachable because at most 2 designed modes reach 5 %. For addition on Qwen2.5-0.5B-Instruct, the §9.3 stop condition (fewer than 3 designed modes at 5 % mass) holds at every n. The one remaining step before the stop rule is 2-operand subtraction (step 2). It requires a subtraction taxonomy (borrow-drop rule, sign handling, synthetic-recovery tests) that the master plan does not define, so it is a new design decision, not a continuation of Phase 4. Options for the researcher: (a) define and run the subtraction step; (b) apply the stop rule and revisit the task, model (e.g. 1.5B replication) or design; (c) amend §9.3, which would be a protocol change requiring disclosure.
+
+Measured cost: 18 censuses plus 3 preflights plus 2 GPU checks, about 0.2 GPU-h total on one L40.

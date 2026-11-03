@@ -64,7 +64,7 @@ for N in 5 6 7 8 9 10; do
 done
 ```
 
-Each job writes `runs/census/n<N>_s20261102_j<jobid>/` (never reused):
+Each job writes `runs/census/n<N>_<tag>_s20261102_j<jobid>/` (tag `p2t2` = prompt v2 + taxonomy v2) (never reused):
 generations_raw/generations/classification parquet, q_ref.json, stability,
 coverage_ambiguity, per-prompt and per-mode summaries, params.json and
 manifest.json. Exit 1 means the census completed but the §9.3 gate failed for

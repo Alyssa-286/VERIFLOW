@@ -1,4 +1,4 @@
-"""Taxonomy v1 tests, including the synthetic-recovery construct check (§9.3 item 5)."""
+"""Taxonomy tests (v2 parser), including the synthetic-recovery construct check (§9.3 item 5)."""
 
 import numpy as np
 import pytest
@@ -25,6 +25,15 @@ from error_modes.parse_answer import parse_answer
         ("Answer: 1,23", None, "unparseable"),
         ("Answer: 10\nAnswer: 11", None, "conflicting"),
         ("Answer: 10\nAnswer: 10", 10, "ok"),
+        # taxonomy v2 (D11): a completion that is only an integer is the answer
+        ("12345", 12345, "ok_bare"),
+        ("  12,345.\n", 12345, "ok_bare"),
+        ("`579`", 579, "ok_bare"),
+        ("**-5**", -5, "ok_bare"),
+        ("The answer is 12345", None, "no_answer_line"),
+        ("12345\n67890", None, "no_answer_line"),
+        ("579 + 1", None, "no_answer_line"),
+        ("", None, "no_answer_line"),
     ],
 )
 def test_parse(text, value, status):

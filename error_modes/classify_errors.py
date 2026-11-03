@@ -1,4 +1,4 @@
-"""Deterministic error-mode taxonomy v1 for two-operand integer addition (master plan §9.2).
+"""Deterministic error-mode taxonomy (v2: bare-integer parse, D11) for two-operand integer addition (master plan §9.2).
 
 Hypothesis matching: compute counterfactual answers for each error mechanism and
 match the parsed answer. Every rule that matches is recorded (multi-hot); the

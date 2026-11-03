@@ -51,10 +51,12 @@ AUDIT_INSTRUCTIONS = """# Manual audit (master plan §9.3.6), census run `{run}`
 Do NOT open `audit_key.csv` until every row is judged.
 
 1. Copy `audit_sample.csv` to `audit_completed.csv` in this same directory.
-2. For each of the {n} rows, read `completion`, find the final answer on the
-   `Answer:` line, compare it with `answer_true` (= a + b), and write ONE label
-   in `judgment`: {labels}.
-     I      no parseable integer on the Answer: line, or conflicting Answer: lines
+2. For each of the {n} rows, read `completion` and find the final answer: the
+   integer on the `Answer:` line, or, if there is no `Answer:` line, the
+   completion itself when it is nothing but one integer. Compare it with
+   `answer_true` (= a + b) and write ONE label in `judgment`: {labels}.
+     I      no Answer: line and not a bare integer, an unparseable Answer: value,
+            or conflicting Answer: lines
      ECHO   answer equals a, b, or the digit concatenation of a and b
      CARRY  answer equals a+b computed with one or more carries dropped
      TRUNC  answer digits are a proper prefix or suffix of the true sum

@@ -86,3 +86,12 @@ Approved by the researcher after D8. This is the §9.3 ladder's answer-only-prom
 Jobs 3610–3615 (n = 5…10, commit `6c04e29`, preflight 3609) all completed and verified. Every n fails §9.3.1/9.3.2 and §9.1. Ambiguity also fails at n=5. Base accuracy is 0.001–0.024 and coverage 0.003–0.014. 95–97 % of errors are `I`, and about 98 % of those are a bare integer with no `Answer:` prefix: the model obeys "only the final answer" literally. Ladder step 1 (different n, answer-only prompt) is exhausted. Details: `docs/GATE3.md`, `docs/gate3_census_comparison_p2.json`.
 
 Not done, because each is a protocol choice: accepting a bare-integer completion (taxonomy v2, invalidates all censuses), moving to subtraction (ladder step 2, likely to hit the same format failure), or applying the stop rule. No audit was exported and `q_ref.lock` does not exist. Phase 5 must not start.
+
+## D11: Taxonomy v2: a bare-integer completion is parsed as the answer. 2026-11-03
+
+Approved by the researcher after D10. **Chosen after seeing the prompt-v2 outputs** (about 98 % of v2 `I` errors were a bare integer). This is a post hoc parser decision and must be disclosed as such. It is fixed once and is not tuned further.
+
+- Rule: with no `Answer:` line, a completion that is exactly one integer (same integer grammar as before; surrounding whitespace, `*`, backticks, `$`, `\boxed{}` and one trailing period stripped) is the answer, with parse status `ok_bare`. Prose ("The answer is X"), several numbers, working, or an empty completion stay `I`.
+- Unchanged: classes, priority, every error-mode rule, multi-hot ambiguity, gate thresholds, prompt v2, max_new_tokens 256, sampling, split and seed.
+- `TAXONOMY_VERSION = v2`; `taxonomy.lock` payload sha256 `f4bf0f24…eb575d`. All v1-taxonomy censuses are invalid for selection and are kept as evidence. Synthetic recovery (§9.3.5) was rerun: green.
+- Fresh GPU census runs: `n<N>_p2t2_s20261102_j<job>`.

@@ -3,8 +3,11 @@
 The prompt asks for a final line `Answer: <integer>`. Extraction is strict:
 - every line matching `Answer:` (case-insensitive, optional markdown bold/backticks) is collected;
 - a candidate is an optionally-signed integer, allowing thousands separators (`,` `_` thin/normal spaces);
-- zero `Answer:` lines, an unparseable value, or several `Answer:` lines with *different* values
-  give status != "ok" (class I, never U).
+- taxonomy v2: with no `Answer:` line, a completion consisting of exactly one integer
+  (after stripping whitespace, `*`, backticks, `$`, `\\boxed{}` and one trailing period)
+  is the answer, status "ok_bare";
+- otherwise zero `Answer:` lines, an unparseable value, or several `Answer:` lines with
+  *different* values give a status without a value (class I, never U).
 Formatting differences (commas, spaces, leading zeros, a leading '+') are normalised, not errors (§9.2).
 """
 
@@ -20,7 +23,7 @@ _INT = re.compile(r"^[+-]?\d{1,3}(?:[,_   ]\d{3})+$|^[+-]?\d+$")
 @dataclass(frozen=True)
 class ParseResult:
     value: int | None
-    status: str  # ok | no_answer_line | unparseable | conflicting
+    status: str  # ok | ok_bare | no_answer_line | unparseable | conflicting
     raw: str | None = None
 
 
@@ -44,6 +47,11 @@ def parse_integer(token: str) -> int | None:
 def parse_answer(completion: str) -> ParseResult:
     matches = _ANSWER_LINE.findall(completion)
     if not matches:
+        # Taxonomy v2 (DECISIONS.md D11): a completion that is nothing but one
+        # integer is that answer. Prose, working or several numbers stay I.
+        v = parse_integer(completion)
+        if v is not None:
+            return ParseResult(v, "ok_bare", completion.strip())
         return ParseResult(None, "no_answer_line")
     values = []
     for m in matches:

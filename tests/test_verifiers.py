@@ -46,7 +46,7 @@ def test_invalid_never_rewarded_and_record_fields():
         r = v.decide(58, 67, "nonsense", s, "p", 0)
         assert r.reward == 0.0 and not r.correct and r.mode == "I"
     r = v.decide(58, 67, "Answer: 125", 5, "p", 2)
-    assert r.correct and r.taxonomy_version == "v1" and len(r.verifier_config_sha256) == 64
+    assert r.correct and r.taxonomy_version == "v2" and len(r.verifier_config_sha256) == 64
 
 
 def test_replay_determinism_and_independence_from_global_rngs():

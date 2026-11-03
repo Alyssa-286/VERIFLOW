@@ -24,7 +24,7 @@ STATUS=0
 uv run --frozen --group gpu python -m experiments.base_mode_census \
     --n "$CENSUS_N" --model qwen0p5b --samples 4 \
     --seed 20261102 --n-boot 2000 --out "$RUN_DIR" \
-    --run-id "n${CENSUS_N}_p2_s20261102_j${SLURM_JOB_ID}" || STATUS=$?
+    --run-id "n${CENSUS_N}_p2t2_s20261102_j${SLURM_JOB_ID}" || STATUS=$?
 
 # Exit 1 = the census completed but the §9.3 automated gate failed for this n
 # (expected for some n); any other nonzero is a run failure.

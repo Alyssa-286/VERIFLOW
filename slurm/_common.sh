@@ -9,6 +9,7 @@ case "$(pwd -P)" in
   *) echo "refusing: not in VERIFLOW (cwd=$(pwd -P))" >&2; exit 2 ;;
 esac
 
+export PATH="$HOME/.local/bin:$PATH"   # uv (installed by the astral installer)
 export HF_HOME="$VERIFLOW_ROOT/.cache/hf"
 export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
 export TRANSFORMERS_OFFLINE="${TRANSFORMERS_OFFLINE:-1}"

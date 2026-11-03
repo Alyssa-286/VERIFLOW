@@ -39,7 +39,8 @@ from error_modes.classify_errors import TAXONOMY_VERSION
 from experiments import census_core
 from experiments.mock_policy import mock_completions
 from scripts.manifest_lib import collect_env, collect_git, lock_hashes
-from vf_datasets.arithmetic import DEFAULT_SIZES, check_disjoint, frame_sha256, make_splits
+from vf_datasets.arithmetic import (DEFAULT_SIZES, PROMPT_TEMPLATE_SHA256, check_disjoint,
+                                    frame_sha256, make_splits)
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MAX_NEW_TOKENS = 128  # answers are short; recorded in params.json
@@ -108,6 +109,14 @@ def generate_mock(splits, n_digits, samples, seed, mock_probs):
     return pd.DataFrame(rows)
 
 
+def _cuda_hardware() -> dict:
+    import torch
+    return {"device_name": torch.cuda.get_device_name(0),
+            "total_vram_mib": round(torch.cuda.get_device_properties(0).total_memory / 2**20),
+            "peak_vram_mib": round(torch.cuda.max_memory_allocated() / 2**20, 1),
+            "torch": torch.__version__, "cuda_runtime": torch.version.cuda}
+
+
 # ------------------------------------------------------------------ main
 
 def main(argv=None) -> int:
@@ -123,10 +132,15 @@ def main(argv=None) -> int:
     ap.add_argument("--mock-probs", default=None, help="JSON file {mode: prob} for the mock backend")
     ap.add_argument("--n-boot", type=int, default=2000)
     ap.add_argument("--out", default="runs/census")
+    ap.add_argument("--run-id", default=None,
+                    help="run directory name (default n<digits>_s<seed>); must not exist yet")
     args = ap.parse_args(argv)
 
     started = time.strftime("%Y-%m-%dT%H:%M:%S")
-    out_dir = Path(args.out) / f"n{args.n}_s{args.seed}"
+    t0 = time.monotonic()
+    out_dir = Path(args.out) / (args.run_id or f"n{args.n}_s{args.seed}")
+    if out_dir.exists() and any(out_dir.iterdir()):
+        raise SystemExit(f"refusing to overwrite existing census run {out_dir}; pass a new --run-id")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sizes = {**DEFAULT_SIZES}
@@ -149,7 +163,7 @@ def main(argv=None) -> int:
                                                   args.samples, args.seed,
                                                   args.max_new_tokens, out_dir)
         gen_kwargs["max_new_tokens"] = args.max_new_tokens
-        gens_meta = {"sampling": gen_kwargs}
+        gens_meta = {"sampling": gen_kwargs, "hardware": _cuda_hardware()}
     else:
         gens = generate_mock(splits, args.n, args.samples, args.seed, mock_probs)
         gens_meta = {"mock_probs": mock_probs, "max_new_tokens": args.max_new_tokens}
@@ -199,7 +213,8 @@ def main(argv=None) -> int:
         "max_new_tokens": args.max_new_tokens, **gens_meta,
         "prompt_sha256": frame_sha256(splits["census"]),
         "dataset_sha256": {k: frame_sha256(v) for k, v in splits.items()},
-        "git": git, "env": collect_env(), "time": {"start": started, "end": time.strftime("%Y-%m-%dT%H:%M:%S")},
+        "git": git, "env": collect_env(), "time": {"start": started, "end": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                 "wall_seconds": round(time.monotonic() - t0, 1)},
         "gate_pass": gate_pass,
     }
     (out_dir / "params.json").write_text(json.dumps(params, indent=2) + "\n")
@@ -213,11 +228,14 @@ def main(argv=None) -> int:
         "git_commit": git["commit"], "git_dirty": git["dirty"],
         "model": spec_meta if args.backend == "hf" else {"backend": "mock"},
         "taxonomy_version": TAXONOMY_VERSION,
-        "prompt_template_sha256": params["prompt_sha256"],
+        "prompt_template_sha256": PROMPT_TEMPLATE_SHA256,
+        "census_prompts_sha256": params["prompt_sha256"],
         "dataset_sha256": params["dataset_sha256"],
         **lock_hashes(ROOT),
         "q_ref_sha256": hashlib.sha256(q_ref_json.read_bytes()).hexdigest(),
         "seed": args.seed,
+        "split_sizes": sizes,
+        "hardware": gens_meta.get("hardware"),
         "env": params["env"],
         "slurm": {"job_id": os.environ.get("SLURM_JOB_ID"),
                   "array_task_id": os.environ.get("SLURM_ARRAY_TASK_ID"),

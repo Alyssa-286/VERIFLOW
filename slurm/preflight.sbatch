@@ -5,8 +5,8 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=00:30:00
-#SBATCH --output=%x_%A.out
-#SBATCH --error=%x_%A.err
+#SBATCH --output=logs/slurm/%x_%j.out
+#SBATCH --error=logs/slurm/%x_%j.err
 source "$HOME/VERIFLOW/slurm/_common.sh"
 
 cd "$VERIFLOW_ROOT"
@@ -15,13 +15,13 @@ cd "$VERIFLOW_ROOT"
   uv --version || true
 } > "$VERIFLOW_JOB_META" 2>&1 || true
 
-# 1. environment build/verify (frozen lockfile: uv.lock is committed)
-test -d .venv || uv sync --frozen
-uv sync --frozen
+# 1. environment build/verify (frozen lockfile: uv.lock is committed). The gpu
+#    group must be named, or uv sync would uninstall torch/transformers.
+uv sync --frozen --group gpu
 
 # 2. full preflight incl. the CPU test suite
-uv run python -m scripts.preflight --tests --require-clean
-STATUS=$?
+STATUS=0
+uv run --frozen --group gpu python -m scripts.preflight --tests --require-clean || STATUS=$?
 
 python -m scripts.finalize_manifest --run-dir "$VERIFLOW_ROOT/runs/preflight" \
     --exit-code "$STATUS" 2>/dev/null || true

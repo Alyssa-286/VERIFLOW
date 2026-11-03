@@ -78,14 +78,23 @@ def local_revision(hf_home: Path, repo: str) -> str | None:
     return None
 
 
-def check_revision(spec: ModelSpec, hf_home: Path) -> dict:
-    """Compare the cached snapshot ref (if any) with the pinned revision.
+def snapshot_dir(hf_home: Path, repo: str, revision: str) -> Path:
+    return hf_home / "hub" / f"models--{repo.replace('/', '--')}" / "snapshots" / revision
 
-    Returns a dict {ok, cached, pinned, repo}. Never raises: gpucheck and the
-    census wrapper report this result either way."""
+
+def check_revision(spec: ModelSpec, hf_home: Path) -> dict:
+    """Compare the cached snapshot with the pinned revision.
+
+    Downloading by commit hash creates snapshots/<sha>/ without a refs/main, so
+    the pinned snapshot directory (config + safetensors weights) is the primary
+    evidence; a refs/main that names another commit is a mismatch.
+    Returns a dict {ok, cached, pinned, snapshot_present, repo}. Never raises."""
     cached = local_revision(hf_home, spec.repo)
+    snap = snapshot_dir(hf_home, spec.repo, spec.revision)
+    present = (snap / "config.json").is_file() and any(snap.glob("*.safetensors"))
     return {"repo": spec.repo, "cached": cached, "pinned": spec.revision,
-            "ok": cached is None or cached == spec.revision}
+            "snapshot_present": present,
+            "ok": present and (cached is None or cached == spec.revision)}
 
 
 def load_model_and_tokenizer(spec: ModelSpec, *, offline: bool = True):

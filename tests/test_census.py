@@ -142,7 +142,9 @@ def test_census_end_to_end_mock(tmp_path):
     manifest = json.loads((run_dir / "manifest.json").read_text())
     assert manifest["experiment_id"] == "veriflow-census-v1"
     assert manifest["git_commit"]
-    assert manifest["dataset_sha256"]["census"] == manifest["prompt_template_sha256"]
+    assert manifest["dataset_sha256"]["census"] == manifest["census_prompts_sha256"]
+    from vf_datasets.arithmetic import PROMPT_TEMPLATE_SHA256
+    assert manifest["prompt_template_sha256"] == PROMPT_TEMPLATE_SHA256
     assert (run_dir / "coverage_ambiguity.json").read_text().count('"pass"') >= 4
     # sufficient samples: the gate should pass for this well-behaved mock
     cov = json.loads((run_dir / "coverage_ambiguity.json").read_text())

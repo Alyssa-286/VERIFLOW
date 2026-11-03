@@ -93,11 +93,11 @@ def driver_cuda_compatible(smi_rows: list[dict], torch_rep: dict) -> dict:
             "rule": f"driver >= baseline for CUDA {runtime} (matplotlib-free check, informational)"}
 
 
-def check_models(do_generate: bool) -> list[dict]:
+def check_models(do_generate: bool, names=("qwen0p5b",)) -> list[dict]:
     from models.loading import load_spec, check_revision
     hf_home = Path(_hf_home())
     out = []
-    for name in ("qwen0p5b", "qwen1p5b"):
+    for name in names:
         spec = load_spec(name)
         d = check_revision(spec, hf_home)
         d["name"] = name
@@ -117,14 +117,19 @@ def _generate_smoke(spec) -> dict:
         import torch  # noqa
         from models.loading import load_model_and_tokenizer
         model, tok = load_model_and_tokenizer(spec)
+        model = model.eval().to("cuda")
+        torch.cuda.reset_peak_memory_stats()
         device = next(model.parameters()).device
         msgs = [{"role": "user", "content": "Compute 5 + 7. Answer: 12"}]
         enc = tok(tok.apply_chat_template([{"role": "user", "content": msgs[0]["content"]}],
                                           tokenize=False, add_generation_prompt=True),
                   return_tensors="pt").to(device)
-        out = model.generate(**enc, max_new_tokens=16, do_sample=False)
+        with torch.no_grad():
+            out = model.generate(**enc, max_new_tokens=16, do_sample=False)
         text = tok.decode(out[0][enc["input_ids"].shape[1]:], skip_special_tokens=True)
-        return {"ok": True, "sample": text[:80]}
+        return {"ok": True, "sample": text[:80], "device": str(device),
+                "dtype": str(next(model.parameters()).dtype),
+                "peak_vram_mib": round(torch.cuda.max_memory_allocated() / 2**20, 1)}
     except Exception as e:
         return {"ok": False, "error": repr(e)[:200]}
 
@@ -133,17 +138,25 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--models", action="store_true", help="check pinned revisions")
     ap.add_argument("--generate", action="store_true", help="run a tiny HF generate (models must be cached)")
-    ap.add_argument("--must-pass", action="store_true", help="exit nonzero if no usable GPU")
+    ap.add_argument("--model", action="append", default=None,
+                    help="model spec(s) to check (default qwen0p5b; repeatable)")
+    ap.add_argument("--must-pass", action="store_true",
+                    help="exit nonzero unless GPU, bf16 and every requested model check pass")
     args = ap.parse_args(argv)
 
     report = {"stage": "gpucheck", "gpus": smi(), "torch": torch_report()}
     report["torch"]["driver_compat"] = driver_cuda_compatible(report["gpus"], report["torch"])
+    ok = (bool(report["gpus"]) and report["torch"].get("cuda_available", False)
+          and bool(report["torch"].get("bf16_supported"))
+          and bool(report["torch"].get("tests", {}).get("bf16_matmul")))
     if args.models:
         try:
-            report["models"] = check_models(args.generate)
+            report["models"] = check_models(args.generate, tuple(args.model or ("qwen0p5b",)))
         except FileNotFoundError as e:
             report["models"] = [{"error": str(e)}]
-    report["ok"] = bool(report["gpus"]) and report["torch"].get("cuda_available", False)
+        ok = ok and all(m.get("ok") and (not args.generate or m.get("generate_smoke", {}).get("ok"))
+                        for m in report["models"])
+    report["ok"] = ok
     print(json.dumps(report, indent=2))
     if args.must_pass and not report["ok"]:
         return 1

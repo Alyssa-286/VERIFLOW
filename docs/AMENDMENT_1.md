@@ -45,9 +45,11 @@ exhaustive:
 - **Secondary annotation:** the mechanism labels (ECHO, CARRY, TRUNC, TRANS,
   DIGIT, U) are recorded per answer for description only. They are never used
   in a gate statistic or a verifier configuration.
-- **Small modes:** a designed mode below 0.02 merges into the nearest-defined
-  sibling before configurations are generated (§9.3.2). NEG is expected to be
-  near 0.
+- **Small modes (§9.3.2 has no `U` to merge into here):** before
+  configurations are generated, NEG merges into LEN if q(NEG) < 0.02 (both
+  mean "wrong shape"). Any other designed mode below 0.02 merges into MULTI.
+  A merged mode does not count towards the ≥ 3-modes criterion. NEG is
+  expected to be near 0.
 
 ## Unchanged from the plan and from D9/D11
 

@@ -53,7 +53,7 @@ def verify_run(run_dir: Path, model: str = "qwen0p5b") -> dict:
     cls = pd.read_parquet(run_dir / "classification.parquet")
     gens = pd.read_parquet(run_dir / "generations.parquet")
 
-    spec = load_spec(model)
+    spec = load_spec((man.get("model") or {}).get("name") or model)  # the run's own pinned model
     if (man.get("model") or {}).get("revision") != spec.revision:
         problems.append("manifest model revision != pinned revision")
     if (man.get("model") or {}).get("backend") == "mock":
@@ -86,7 +86,7 @@ def verify_run(run_dir: Path, model: str = "qwen0p5b") -> dict:
         problems.append("split-half TV does not match classification.parquet")
 
     checks = {c["id"]: c for c in cov["gate"]}
-    n_heavy = sum(1 for m in classes_for(task)[1] if q[m] >= census_core.GATE_MASS_MIN)
+    n_heavy = sum(1 for m in classes_for(q_doc.get("scheme", task))[1] if q[m] >= census_core.GATE_MASS_MIN)
     bad = cls[~cls["correct"]]
     return {
         "run_id": run_dir.name,
@@ -95,8 +95,13 @@ def verify_run(run_dir: Path, model: str = "qwen0p5b") -> dict:
         "problems": problems,
         "n_digits": q_doc["n_digits"],
         "task": task,
+        "scheme": q_doc.get("scheme", task),
         "u_diagnostics": (bad.loc[bad["mode"] == "U", "diag"].value_counts(normalize=True).to_dict()
                           if "diag" in bad.columns else {}),
+        # taxonomy v3 keeps the v2 mechanism labels as a descriptive annotation (Amendment 1)
+        "mechanism_annotation": (bad.loc[bad["mode"] != "I", "diag"].str.split("|").str[0]
+                                 .value_counts(normalize=True).round(4).to_dict()
+                                 if q_doc.get("scheme") == "add_v3" else {}),
         "slurm_job_id": (man.get("slurm") or {}).get("job_id"),
         "wall_seconds": (man.get("time") or {}).get("wall_seconds"),
         "hardware": man.get("hardware"),

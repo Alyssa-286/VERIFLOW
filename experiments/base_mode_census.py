@@ -141,6 +141,8 @@ def main(argv=None) -> int:
     ap.add_argument("--backend", choices=("hf", "mock"), default="hf")
     ap.add_argument("--task", choices=("add", "sub"), default="add",
                     help="add: a + b (§9.1); sub: a - b with a > b (§9.3 ladder step 2, D13)")
+    ap.add_argument("--taxonomy", choices=("mech", "v3"), default="mech",
+                    help="mech: v2 mechanism taxonomy; v3: outcome partition (Amendment 1, addition only)")
     ap.add_argument("--mock-probs", default=None, help="JSON file {mode: prob} for the mock backend")
     ap.add_argument("--n-boot", type=int, default=2000)
     ap.add_argument("--out", default="runs/census")
@@ -158,6 +160,9 @@ def main(argv=None) -> int:
     sizes = {**DEFAULT_SIZES}
     if args.size is not None:
         sizes["census"] = args.size
+    if args.taxonomy == "v3" and args.task != "add":
+        raise SystemExit("taxonomy v3 is defined for addition only (Amendment 1)")
+    scheme = "add_v3" if args.taxonomy == "v3" else args.task
     if args.task == "sub" and args.backend == "mock":
         raise SystemExit("the mock backend models addition only")
     splits = make_splits(args.n, sizes=sizes, base_seed=args.base_seed, task=args.task)
@@ -186,7 +191,7 @@ def main(argv=None) -> int:
     # can never cost the GPU work.
     gens.to_parquet(out_dir / "generations_raw.parquet", index=False)
 
-    cls = census_core.classify_generations(gens, args.task)
+    cls = census_core.classify_generations(gens, scheme)
     cls["sample_idx"] = gens["sample_idx"].to_numpy()  # row order is preserved
     per_prompt = census_core.per_prompt_summary(cls)
     q_point = census_core.q_ref_point(cls)
@@ -210,7 +215,8 @@ def main(argv=None) -> int:
     q_ref_doc = {
         "n_digits": args.n,
         "task": args.task,
-        "taxonomy_version": taxonomy_version_for(args.task),
+        "scheme": scheme,
+        "taxonomy_version": taxonomy_version_for(scheme),
         "prompt_version": PROMPT_VERSION,
         "q_ref": q_point,
         "q_ref_ci95": q_ci,
@@ -228,7 +234,7 @@ def main(argv=None) -> int:
 
     git = collect_git(ROOT)
     params = {
-        "kind": "census", "task": args.task, "n_digits": args.n, "model": spec_meta, "samples": args.samples,
+        "kind": "census", "task": args.task, "scheme": scheme, "n_digits": args.n, "model": spec_meta, "samples": args.samples,
         "seed": args.seed, "base_seed": args.base_seed, "split_sizes": sizes,
         "max_new_tokens": args.max_new_tokens, **gens_meta,
         "prompt_sha256": frame_sha256(splits["census"]),
@@ -248,7 +254,8 @@ def main(argv=None) -> int:
         "git_commit": git["commit"], "git_dirty": git["dirty"],
         "model": spec_meta if args.backend == "hf" else {"backend": "mock"},
         "task": args.task,
-        "taxonomy_version": taxonomy_version_for(args.task),
+        "scheme": scheme,
+        "taxonomy_version": taxonomy_version_for(scheme),
         "prompt_version": PROMPT_VERSION,
         "prompt_template_sha256": prompt_template_sha256(args.task),
         "census_prompts_sha256": params["prompt_sha256"],

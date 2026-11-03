@@ -1,0 +1,26 @@
+{
+  "payload": {
+    "designed_modes": [
+      "NEG",
+      "LEN",
+      "ONE_HI",
+      "ONE_LO",
+      "MULTI"
+    ],
+    "one_digit_split": "ONE_HI iff position < floor(L/2) from the most significant digit",
+    "parser": "v2",
+    "priority": [
+      "C",
+      "I",
+      "NEG",
+      "LEN",
+      "ONE_HI",
+      "ONE_LO",
+      "MULTI"
+    ],
+    "spec": "docs/AMENDMENT_1.md",
+    "split_seed": 20261104,
+    "version": "v3"
+  },
+  "sha256": "6b1ebdf9dd31f17cd8d93ae39f50c2ae0a53c11f0a466bb374fa3fd7d1978069"
+}

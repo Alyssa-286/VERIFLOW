@@ -43,15 +43,40 @@ ROOT = Path(__file__).resolve().parents[1]
 # The reviewer may name any rule the classifier knows about, say it is genuinely
 # ambiguous (AMBIG), or disagree outright with the parsed class by naming a
 # designed/U/I mode. AMBIG agrees with any multi-rule match.
-ALLOWED_JUDGMENTS = ("ECHO", "CARRY", "BORROW", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG")
-# Task-specific wording of the audit rules (addition default; subtraction D13).
+ALLOWED_JUDGMENTS = ("ECHO", "CARRY", "BORROW", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG",
+                     "NEG", "LEN", "ONE_HI", "ONE_LO", "MULTI")
+
+
+def _mech_rules(res: str, mode_line: str) -> str:
+    return (f"     ECHO   answer equals a, b, or the digit concatenation of a and b\n"
+            f"     {mode_line}\n"
+            f"     TRUNC  answer digits are a proper prefix or suffix of the true {res}\n"
+            f"     TRANS  true {res} with exactly one adjacent pair of distinct digits swapped\n"
+            f"     DIGIT  same length as the true {res}, exactly one digit differs\n"
+            f"     U      any other integer\n"
+            f"     AMBIG  the answer genuinely fits two or more of the rules above\n"
+            f"   Apply the rules in the order listed (the first that fits wins) unless you\n"
+            f"   judge the example truly ambiguous.")
+
+
+# Scheme-specific wording of the audit rules (addition default; subtraction D13;
+# taxonomy v3 Amendment 1).
 AUDIT_TASK_TEXT = {
-    "add": {"op": "a + b", "res": "sum", "labels": ("ECHO", "CARRY", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG"),
-            "mode_line": "CARRY  answer equals a+b computed with one or more carries dropped"},
-    "sub": {"op": "a - b", "res": "difference",
-            "labels": ("ECHO", "BORROW", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG"),
-            "mode_line": "BORROW answer equals a-b computed with one or more borrows dropped\n"
-                         "            (the column adds 10 but the next column is not decremented)"},
+    "add": {"op": "a + b", "labels": ("ECHO", "CARRY", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG"),
+            "rules": _mech_rules("sum", "CARRY  answer equals a+b computed with one or more carries dropped")},
+    "sub": {"op": "a - b", "labels": ("ECHO", "BORROW", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG"),
+            "rules": _mech_rules("difference",
+                                 "BORROW answer equals a-b computed with one or more borrows dropped\n"
+                                 "            (the column adds 10 but the next column is not decremented)")},
+    "add_v3": {"op": "a + b", "labels": ("NEG", "LEN", "ONE_HI", "ONE_LO", "MULTI", "I"),
+               "rules": ("     NEG    the answer is negative\n"
+                         "     LEN    the answer has a different number of digits than the true sum\n"
+                         "     ONE_HI same number of digits, exactly one digit differs, and it is in the\n"
+                         "            high half: position < floor(L/2) counting from the leftmost digit\n"
+                         "            as 0, where L is the number of digits of the true sum\n"
+                         "     ONE_LO same number of digits, exactly one digit differs, at position >= floor(L/2)\n"
+                         "     MULTI  same number of digits, two or more digits differ\n"
+                         "   Exactly one label fits each row (the classes do not overlap).")},
 }
 AUDIT_DISAGREEMENT_MAX = 0.05  # §9.3.6
 
@@ -66,15 +91,7 @@ Do NOT open `audit_key.csv` until every row is judged.
    `answer_true` (= {op}) and write ONE label in `judgment`: {labels}.
      I      no Answer: line and not a bare integer, an unparseable Answer: value,
             or conflicting Answer: lines
-     ECHO   answer equals a, b, or the digit concatenation of a and b
-     {mode_line}
-     TRUNC  answer digits are a proper prefix or suffix of the true {res}
-     TRANS  true {res} with exactly one adjacent pair of distinct digits swapped
-     DIGIT  same length as the true {res}, exactly one digit differs
-     U      any other integer
-     AMBIG  the answer genuinely fits two or more of the rules above
-   Apply the rules in the order listed (the first that fits wins) unless you
-   judge the example truly ambiguous.
+{rules}
 3. Leave every other column unchanged. Validate with
    `python -m experiments.check_construct_gate --census <this dir> --audit-results <this dir>/audit_completed.csv`.
    Disagreement must be <= 5 %.
@@ -111,10 +128,10 @@ def write_audit_sample(cls: pd.DataFrame, run_dir: Path, n: int = 200, seed: int
     key = sample[["row_id", "prompt_id", "mode", "matches"]].rename(columns={"mode": "primary"})
     key_path = run_dir / "audit_key.csv"
     key.to_csv(key_path, index=False)
-    tt = AUDIT_TASK_TEXT[task]
+    tt = AUDIT_TASK_TEXT[census_core.scheme_of(cls)]
     (run_dir / "audit_instructions.md").write_text(AUDIT_INSTRUCTIONS.format(
         n=len(blind), labels=", ".join(tt["labels"]), run=run_dir.name, op=tt["op"],
-        res=tt["res"], mode_line=tt["mode_line"]), encoding="utf-8")
+        rules=tt["rules"]), encoding="utf-8")
     return blind_path, key_path
 
 
@@ -201,8 +218,10 @@ def freeze_qref(run_dir: Path) -> Path:
         "prompt_template_sha256": manifest.get("prompt_template_sha256"),
         "prompt_lock_sha256": manifest.get("prompt_sub_lock_sha256" if q_doc.get("task") == "sub"
                                            else "prompt_lock_sha256"),
-        "taxonomy_lock_sha256": manifest.get("taxonomy_sub_lock_sha256" if q_doc.get("task") == "sub"
-                                             else "taxonomy_lock_sha256"),
+        "scheme": q_doc.get("scheme", q_doc.get("task", "add")),
+        "taxonomy_lock_sha256": manifest.get({"sub": "taxonomy_sub_lock_sha256",
+                                              "add_v3": "taxonomy_v3_lock_sha256"}.get(
+            q_doc.get("scheme", q_doc.get("task", "add")), "taxonomy_lock_sha256")),
         "census_run_q_ref_sha256": hashlib.sha256(q_ref_json.read_bytes()).hexdigest(),
         "frozen_at": __import__("time").strftime("%Y-%m-%dT%H:%M:%S"),
     }

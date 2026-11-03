@@ -98,6 +98,7 @@ def lock_hashes(root: Path | None = None) -> dict:
         "q_ref_lock_sha256": _lock_payload_sha(d / "q_ref.lock"),
         "prompt_sub_lock_sha256": _lock_payload_sha(d / "prompt_sub.lock"),
         "taxonomy_sub_lock_sha256": _lock_payload_sha(d / "taxonomy_sub.lock"),
+        "taxonomy_v3_lock_sha256": _lock_payload_sha(d / "taxonomy_v3.lock"),
     }
 
 

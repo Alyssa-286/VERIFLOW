@@ -15,7 +15,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from error_modes.classify_errors import (DESIGNED_MODES, DESIGNED_MODES_SUB, PRIORITY, PRIORITY_SUB,
-                                        SUB_DIAGNOSTICS, SUB_TAXONOMY_VERSION, TAXONOMY_VERSION)
+                                        DESIGNED_MODES_V3, PRIORITY_V3, SUB_DIAGNOSTICS,
+                                        SUB_TAXONOMY_VERSION, TAXONOMY_VERSION, V3_TAXONOMY_VERSION)
 from vf_datasets.arithmetic import (PROMPT_TEMPLATE, PROMPT_TEMPLATE_SHA256, PROMPT_VERSION,
                                     SUB_PROMPT_TEMPLATE, SUB_PROMPT_TEMPLATE_SHA256)
 
@@ -61,6 +62,19 @@ def main() -> int:
             "designed_modes": list(DESIGNED_MODES_SUB),
             "u_diagnostics": list(SUB_DIAGNOSTICS),
             "spec": "docs/DECISIONS.md D13",
+        },
+    )
+    # Amendment 1 (D15): taxonomy v3 outcome partition for addition.
+    write_lock(
+        "taxonomy_v3.lock",
+        {
+            "version": V3_TAXONOMY_VERSION,
+            "parser": TAXONOMY_VERSION,
+            "priority": list(PRIORITY_V3),
+            "designed_modes": list(DESIGNED_MODES_V3),
+            "one_digit_split": "ONE_HI iff position < floor(L/2) from the most significant digit",
+            "split_seed": 20261104,
+            "spec": "docs/AMENDMENT_1.md",
         },
     )
     return 0

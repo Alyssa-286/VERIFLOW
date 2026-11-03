@@ -94,7 +94,8 @@ def check_git(require_clean: bool) -> dict:
 def check_locks(root: Path | None = None) -> dict:
     d = (root or ROOT) / "configs" / "locked"
     out = {}
-    for name in ("prompt.lock", "taxonomy.lock", "prompt_sub.lock", "taxonomy_sub.lock", "q_ref.lock"):
+    for name in ("prompt.lock", "taxonomy.lock", "prompt_sub.lock", "taxonomy_sub.lock", "taxonomy_v3.lock",
+                 "q_ref.lock"):
         path = d / name
         if not path.exists():
             out[name] = None

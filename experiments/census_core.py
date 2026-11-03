@@ -25,15 +25,23 @@ import numpy as np
 import pandas as pd
 
 from error_modes.classify_errors import (ALL_CLASSES, DESIGNED_MODES, DESIGNED_MODES_SUB,
-                                        TAXONOMY_VERSION, classes_for, classify)
+                                        DESIGNED_MODES_V3, TAXONOMY_VERSION, classes_for, classify,
+                                        task_for)
 
 INCORRECT_CLASSES = [c for c in ALL_CLASSES if c != "C"]  # addition (default task)
-ANY_DESIGNED_MODE = frozenset(DESIGNED_MODES) | frozenset(DESIGNED_MODES_SUB)
+ANY_DESIGNED_MODE = frozenset(DESIGNED_MODES) | frozenset(DESIGNED_MODES_SUB) | frozenset(DESIGNED_MODES_V3)
 
 
 def task_of(cls: pd.DataFrame) -> str:
     """Task recorded by classify_generations; frames without the column are addition."""
     return str(cls["task"].iloc[0]) if "task" in cls.columns and len(cls) else "add"
+
+
+def scheme_of(cls: pd.DataFrame) -> str:
+    """Classification scheme (task + taxonomy); older frames carry only the task."""
+    if "scheme" in cls.columns and len(cls):
+        return str(cls["scheme"].iloc[0])
+    return task_of(cls)
 
 
 def incorrect_classes(task: str = "add") -> list[str]:
@@ -51,6 +59,7 @@ GATE_ACC_RANGE = (0.25, 0.60)  # §9.1 base-accuracy window used to choose n
 # ---------------------------------------------------------------- classification
 
 def classify_generations(gens: pd.DataFrame, task: str = "add") -> pd.DataFrame:
+    # `task` is a classification scheme: "add", "sub" or "add_v3" (Amendment 1).
     """Annotate generations with the task's taxonomy labels. Returns a new frame with
     per-row: mode, matches, correct, ambiguous, value, parse_status, n_chars, task, diag."""
     required = {"prompt_id", "a", "b", "completion"}
@@ -75,7 +84,8 @@ def classify_generations(gens: pd.DataFrame, task: str = "add") -> pd.DataFrame:
                 "value": None if cl.value is None else str(cl.value),
                 "parse_status": cl.parse_status,
                 "n_chars": len(str(r.completion)),
-                "task": task,
+                "task": task_for(task),
+                "scheme": task,
                 "diag": "|".join(cl.diag),
             }
         )
@@ -86,7 +96,7 @@ def classify_generations(gens: pd.DataFrame, task: str = "add") -> pd.DataFrame:
 
 def mode_counts(cls: pd.DataFrame) -> pd.Series:
     """Counts of primary classes among *incorrect* generations, ordered INCORRECT_CLASSES."""
-    classes = incorrect_classes(task_of(cls))
+    classes = incorrect_classes(scheme_of(cls))
     bad = cls.loc[~cls["correct"], "mode"]
     vc = bad.value_counts()
     return pd.Series([int(vc.get(c, 0)) for c in classes], index=classes, dtype=int)
@@ -103,7 +113,7 @@ def q_ref_point(cls: pd.DataFrame) -> dict[str, float]:
 def cluster_bootstrap_q(cls: pd.DataFrame, n_boot: int = 2000, seed: int = 0, ci: float = 0.95) -> dict[str, list[float]]:
     """Percentile CI for each class mass, resampling *prompts* with replacement
     (cluster bootstrap). Prompts contribute their samples unaltered."""
-    classes = incorrect_classes(task_of(cls))
+    classes = incorrect_classes(scheme_of(cls))
     bad = cls.loc[~cls["correct"], ["prompt_id", "mode"]]
     pids = bad["prompt_id"].to_numpy()
     modes = bad["mode"].to_numpy()
@@ -150,7 +160,7 @@ def coverage_and_ambiguity(cls: pd.DataFrame) -> dict[str, float]:
     n_bad = len(bad)
     if n_bad == 0:
         raise ValueError("no incorrect generations")
-    modes = classes_for(task_of(cls))[1]
+    modes = classes_for(scheme_of(cls))[1]
     n_designed = int(bad["mode"].isin(modes).sum())
     designed = bad[bad["mode"].isin(modes)]
     n_amb = int(designed["ambiguous"].sum())

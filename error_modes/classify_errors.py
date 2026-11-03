@@ -38,21 +38,35 @@ DESIGNED_MODES_SUB = ("ECHO", "BORROW", "TRUNC", "TRANS", "DIGIT")
 SUB_DIAGNOSTICS = ("OPSWAP", "NEG", "SFL")
 TASKS = ("add", "sub")
 
+# Taxonomy v3 (Amendment 1, D15): an exhaustive, disjoint partition of wrong
+# addition answers by how they differ from the truth. Mechanism labels are kept
+# only as a descriptive annotation (Classification.diag).
+V3_TAXONOMY_VERSION = "v3"
+PRIORITY_V3 = ("C", "I", "NEG", "LEN", "ONE_HI", "ONE_LO", "MULTI")
+DESIGNED_MODES_V3 = ("NEG", "LEN", "ONE_HI", "ONE_LO", "MULTI")
+SCHEMES = ("add", "sub", "add_v3")  # classification scheme: task + taxonomy
 
-def classes_for(task: str = "add") -> tuple[tuple, tuple]:
-    """(priority, designed modes) for a task."""
-    if task == "add":
+
+def task_for(scheme: str) -> str:
+    return "sub" if scheme == "sub" else "add"
+
+
+def classes_for(scheme: str = "add") -> tuple[tuple, tuple]:
+    """(priority, designed modes) for a classification scheme."""
+    if scheme == "add":
         return PRIORITY, DESIGNED_MODES
-    if task == "sub":
+    if scheme == "sub":
         return PRIORITY_SUB, DESIGNED_MODES_SUB
-    raise ValueError(f"unknown task {task!r}")
+    if scheme == "add_v3":
+        return PRIORITY_V3, DESIGNED_MODES_V3
+    raise ValueError(f"unknown scheme {scheme!r}")
 
 
-def taxonomy_version_for(task: str = "add") -> str:
-    return TAXONOMY_VERSION if task == "add" else SUB_TAXONOMY_VERSION
+def taxonomy_version_for(scheme: str = "add") -> str:
+    return {"add": TAXONOMY_VERSION, "sub": SUB_TAXONOMY_VERSION, "add_v3": V3_TAXONOMY_VERSION}[scheme]
 
 
-_ALL_DESIGNED = frozenset(DESIGNED_MODES) | frozenset(DESIGNED_MODES_SUB)
+_ALL_DESIGNED = frozenset(DESIGNED_MODES) | frozenset(DESIGNED_MODES_SUB) | frozenset(DESIGNED_MODES_V3)
 
 
 @dataclass(frozen=True)
@@ -223,10 +237,37 @@ def classify_value_sub(a: int, b: int, value: int | None, parse_status: str = "o
     return Classification(matches[0], tuple(matches), value, parse_status, diag)
 
 
+def v3_label(value: int, s: int) -> str:
+    """Partition cell of a wrong, parsed addition answer (Amendment 1)."""
+    if value < 0:
+        return "NEG"
+    dv, ds = str(value), str(s)
+    if len(dv) != len(ds):
+        return "LEN"
+    diff = [i for i, (x, y) in enumerate(zip(dv, ds)) if x != y]
+    if len(diff) >= 2:
+        return "MULTI"
+    return "ONE_HI" if diff[0] < len(ds) // 2 else "ONE_LO"
+
+
+@lru_cache(maxsize=65536)
+def classify_value_v3(a: int, b: int, value: int | None, parse_status: str = "ok") -> Classification:
+    """Taxonomy v3: primary = partition cell; diag = the v2 mechanism labels
+    (descriptive only, never used by a gate statistic)."""
+    mech = classify_value(a, b, value, parse_status)
+    if mech.primary in ("C", "I"):
+        return mech
+    label = v3_label(value, a + b)
+    return Classification(label, (label,), value, parse_status, mech.matches)
+
+
 def classify(a: int, b: int, completion: str, task: str = "add") -> Classification:
+    """task is a classification scheme: "add" (v2 mechanisms), "sub", or "add_v3"."""
     pr: ParseResult = parse_answer(completion)
     if task == "sub":
         return classify_value_sub(a, b, pr.value, pr.status)
+    if task == "add_v3":
+        return classify_value_v3(a, b, pr.value, pr.status)
     if task != "add":
-        raise ValueError(f"unknown task {task!r}")
+        raise ValueError(f"unknown scheme {task!r}")
     return classify_value(a, b, pr.value, pr.status)

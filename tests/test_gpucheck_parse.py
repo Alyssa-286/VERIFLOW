@@ -1,7 +1,7 @@
 """Tests for gpucheck's pure parsing / compatibility logic (no GPU needed)."""
 from __future__ import annotations
 
-from scripts.gpucheck import driver_cuda_compatible, parse_nvidia_smi
+from scripts.gpucheck import driver_cuda_compatible, kernel_driver_version, parse_nvidia_smi
 
 SAMPLE = """index, name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], driver_version
 0, NVIDIA L40, 47999 MiB, 21300 MiB, 97 %, 550.54.15
@@ -34,3 +34,10 @@ def test_driver_compatibility_rule():
     # missing info -> None, never a crash or a false positive
     assert driver_cuda_compatible([], {"cuda_runtime": "12.4"})["compatible"] is None
     assert driver_cuda_compatible(smi, {"cuda_runtime": None})["compatible"] is None
+
+
+def test_kernel_driver_version_parse():
+    text = ("NVRM version: NVIDIA UNIX x86_64 Kernel Module  580.173.02  Tue Jun 23 08:38:17 UTC 2026\n"
+            "GCC version:  gcc version 13.3.0\n")
+    assert kernel_driver_version(text) == "580.173.02"
+    assert kernel_driver_version("garbage") is None

@@ -50,6 +50,38 @@ def smi() -> list[dict]:
         return []
 
 
+def kernel_driver_version(text: str | None = None) -> str | None:
+    """Loaded kernel-module version from /proc/driver/nvidia/version."""
+    import re
+    if text is None:
+        try:
+            text = Path("/proc/driver/nvidia/version").read_text()
+        except OSError:
+            return None
+    m = re.search(r"Kernel Module\s+(\d+\.\d+(?:\.\d+)?)", text)
+    return m.group(1) if m else None
+
+
+def torch_inventory() -> list[dict]:
+    """GPU inventory through the CUDA driver API, for nodes where NVML refuses
+    (e.g. 'Driver/library version mismatch' after an un-rebooted driver
+    upgrade). Same keys as the nvidia-smi rows that matter downstream."""
+    try:
+        import torch
+        if not torch.cuda.is_available():
+            return []
+        drv = kernel_driver_version()
+        rows = []
+        for i in range(torch.cuda.device_count()):
+            p = torch.cuda.get_device_properties(i)
+            rows.append({"index": str(i), "name": p.name,
+                         "memory.total": f"{p.total_memory // 2**20} MiB",
+                         "driver_version": drv or "", "source": "torch+/proc"})
+        return rows
+    except Exception:
+        return []
+
+
 def torch_report() -> dict:
     rep: dict = {"torch": None}
     try:
@@ -145,6 +177,14 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     report = {"stage": "gpucheck", "gpus": smi(), "torch": torch_report()}
+    report["kernel_driver"] = kernel_driver_version()
+    if not report["gpus"]:
+        # NVML unusable: fall back to the CUDA driver API; the bf16 kernels and
+        # the model generation below are the actual proof the GPU works.
+        report["nvml_ok"] = False
+        report["gpus"] = torch_inventory()
+    else:
+        report["nvml_ok"] = True
     report["torch"]["driver_compat"] = driver_cuda_compatible(report["gpus"], report["torch"])
     ok = (bool(report["gpus"]) and report["torch"].get("cuda_available", False)
           and bool(report["torch"].get("bf16_supported"))

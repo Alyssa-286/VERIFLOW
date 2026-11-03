@@ -67,10 +67,18 @@ def generate_hf(splits, n_digits, model_name, samples, seed, max_new_tokens, out
         "temperature": 1.0,
         "top_p": 1.0,          # census sampling must match training sampling (ยง11)
         "top_k": 0,
+        # Qwen2.5's generation_config.json ships repetition_penalty=1.1 (and
+        # T=0.7/top_p=0.8/top_k=20); every one must be overridden or the census
+        # would not be pure ancestral sampling (ง11).
+        "repetition_penalty": 1.0,
         "max_new_tokens": max_new_tokens,
         "num_return_sequences": samples,
         "pad_token_id": tok.pad_token_id or tok.eos_token_id,
     }
+    shipped = model.generation_config.to_dict()
+    for k in ("temperature", "top_p", "top_k", "repetition_penalty"):
+        if k in shipped and k not in gen_kwargs:
+            raise RuntimeError(f"model generation_config sets {k}; census must override it")
     df = splits["census"]
     rows = []
     prompt_id = df["prompt_id"].tolist()

@@ -39,11 +39,13 @@ from error_modes.classify_errors import TAXONOMY_VERSION
 from experiments import census_core
 from experiments.mock_policy import mock_completions
 from scripts.manifest_lib import collect_env, collect_git, lock_hashes
-from vf_datasets.arithmetic import (DEFAULT_SIZES, PROMPT_TEMPLATE_SHA256, check_disjoint,
-                                    frame_sha256, make_splits)
+from vf_datasets.arithmetic import (DEFAULT_SIZES, PROMPT_TEMPLATE_SHA256, PROMPT_VERSION,
+                                    check_disjoint, frame_sha256, make_splits)
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MAX_NEW_TOKENS = 128  # answers are short; recorded in params.json
+# Locked with prompt v2 (D9): generous enough that truncation never decides an
+# answer-only reply; becomes the training max_completion_length (§11).
+DEFAULT_MAX_NEW_TOKENS = 256
 
 
 # ------------------------------------------------------------------ backends
@@ -204,6 +206,7 @@ def main(argv=None) -> int:
     q_ref_doc = {
         "n_digits": args.n,
         "taxonomy_version": TAXONOMY_VERSION,
+        "prompt_version": PROMPT_VERSION,
         "q_ref": q_point,
         "q_ref_ci95": q_ci,
         "base_accuracy": base_accuracy,
@@ -240,6 +243,7 @@ def main(argv=None) -> int:
         "git_commit": git["commit"], "git_dirty": git["dirty"],
         "model": spec_meta if args.backend == "hf" else {"backend": "mock"},
         "taxonomy_version": TAXONOMY_VERSION,
+        "prompt_version": PROMPT_VERSION,
         "prompt_template_sha256": PROMPT_TEMPLATE_SHA256,
         "census_prompts_sha256": params["prompt_sha256"],
         "dataset_sha256": params["dataset_sha256"],

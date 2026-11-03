@@ -70,3 +70,13 @@ The task is two-operand integer addition, not ETH's decimal chain-sum. The reaso
 - Audit validity: `AMBIG` agrees only with rows the classifier also found multi-rule. Previously an all-AMBIG audit scored 0 % disagreement. The q_ref lock refuses a missing manifest or an unpinned revision, and records the model revision, prompt/taxonomy hashes, Slurm job and git commit.
 
 **Open decision (researcher):** the §9.3 ladder's next permitted step is an answer-only prompt. That needs (a) a new prompt template, which becomes `prompt.lock` v2, and (b) a max_new_tokens choice. 45 % of all v1 generations hit the 128-token code default, and §11 ties the cap to the not-yet-fixed training max_completion_length. Neither is predeclared, so neither was improvised. The DIGIT-only designed mass and U ≥ 15 % at n ≥ 6 make it likely that a format fix alone cannot reach 70 % coverage beyond n = 5. In that case the ladder continues to subtraction, then M = 3, then the kill rule.
+
+## D9: Prompt v2 (answer-only) and max_new_tokens = 256, locked before any v2 data. 2026-11-03
+
+Approved by the researcher after D8. This is the §9.3 ladder's answer-only-prompt step.
+
+- Template v2: `Compute {a} + {b}.` / `Reply with only the final answer, exactly in the form` / `Answer: <integer>`. `prompt.lock` payload sha256 `918a83d3…e492a8`, template sha256 `5cd38864…6261c5`. v1 is kept as `PROMPT_TEMPLATE_V1` and in git history; v1 runs are evidence only and can't be selected.
+- `max_new_tokens = 256`, recorded in `prompt.lock`. It becomes the training `max_completion_length` (§11).
+- Unchanged: census split operands, seeds, 2,000 × 4 sampling, T=1.0/top_p=1.0/top_k=0/repetition_penalty=1.0, taxonomy v1 (`taxonomy.lock` hash unchanged), gate thresholds, §9.1 selection rule.
+- No further wording variants are tried on census data. If v2 fails, the ladder continues to subtraction.
+- Run ids: `n<N>_p2_s20261102_j<job>`.

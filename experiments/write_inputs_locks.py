@@ -15,9 +15,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from error_modes.classify_errors import DESIGNED_MODES, PRIORITY, TAXONOMY_VERSION
-from vf_datasets.arithmetic import PROMPT_TEMPLATE, PROMPT_TEMPLATE_SHA256
+from vf_datasets.arithmetic import PROMPT_TEMPLATE, PROMPT_TEMPLATE_SHA256, PROMPT_VERSION
 
-LOCK_DIR = Path(__file__).resolve().parents[1] / "configs" / "locked"
+from experiments.base_mode_census import DEFAULT_MAX_NEW_TOKENS
+
+LOCK_DIR =Path(__file__).resolve().parents[1] / "configs" / "locked"
 
 
 def write_lock(name: str, payload: dict) -> Path:
@@ -32,7 +34,9 @@ def write_lock(name: str, payload: dict) -> Path:
 
 def main() -> int:
     LOCK_DIR.mkdir(parents=True, exist_ok=True)
-    write_lock("prompt.lock", {"template": PROMPT_TEMPLATE, "sha256": PROMPT_TEMPLATE_SHA256})
+    write_lock("prompt.lock", {"version": PROMPT_VERSION, "template": PROMPT_TEMPLATE,
+                               "sha256": PROMPT_TEMPLATE_SHA256,
+                               "max_new_tokens": DEFAULT_MAX_NEW_TOKENS})
     write_lock(
         "taxonomy.lock",
         {

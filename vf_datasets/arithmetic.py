@@ -17,9 +17,17 @@ import hashlib
 import numpy as np
 import pandas as pd
 
-PROMPT_TEMPLATE = (
+# v1 (2026-11-02) failed Gate 3 at every n, mostly through missing Answer:
+# lines (DECISIONS.md D8). v2 is the §9.3 ladder's answer-only prompt (D9).
+PROMPT_TEMPLATE_V1 = (
     "Compute {a} + {b}.\n"
     "You may show brief working. On the last line, write the final answer exactly in the form\n"
+    "Answer: <integer>"
+)
+PROMPT_VERSION = "v2"
+PROMPT_TEMPLATE = (
+    "Compute {a} + {b}.\n"
+    "Reply with only the final answer, exactly in the form\n"
     "Answer: <integer>"
 )
 PROMPT_TEMPLATE_SHA256 = hashlib.sha256(PROMPT_TEMPLATE.encode()).hexdigest()

@@ -1,7 +1,9 @@
 {
   "payload": {
-    "sha256": "a5962ac0a68602d90a3311a65230ca2720d9e55aa30ea3136173736f183c93b4",
-    "template": "Compute {a} + {b}.\nYou may show brief working. On the last line, write the final answer exactly in the form\nAnswer: <integer>"
+    "max_new_tokens": 256,
+    "sha256": "5cd3886434626eab91780d3fdba909ee3c9714fef62f23e55e0a7c0dbb6261c5",
+    "template": "Compute {a} + {b}.\nReply with only the final answer, exactly in the form\nAnswer: <integer>",
+    "version": "v2"
   },
-  "sha256": "13680a22f60fa668baa3e029ef76bd726c5b915b3e54f8f901c3fd33a3b06d1b"
+  "sha256": "918a83d3305f03d98ae58ed1d28f842833e24ae8623c6b1d215834aed3e492a8"
 }

@@ -182,6 +182,7 @@ def freeze_qref(run_dir: Path) -> Path:
         "census_slurm_job_id": (manifest.get("slurm") or {}).get("job_id"),
         "census_git_commit": manifest.get("git_commit"),
         "model": {"name": model["name"], "repo": model.get("repo"), "revision": model["revision"]},
+        "prompt_version": manifest.get("prompt_version"),
         "prompt_template_sha256": manifest.get("prompt_template_sha256"),
         "prompt_lock_sha256": manifest.get("prompt_lock_sha256"),
         "taxonomy_lock_sha256": manifest.get("taxonomy_lock_sha256"),

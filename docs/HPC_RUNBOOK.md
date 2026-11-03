@@ -14,87 +14,74 @@ The §16.2 policy commands were run on 2026-11-02 and are recorded in
 ssh <cluster-user>@<login-host-ip> 'squeue -u <cluster-user>'   # ErrorEcho priority check
 ```
 
-## 1. Create the isolated project tree on the cluster
+## 1–2. Deploy (done 2026-11-03; repeat only to update)
+
+The cluster cannot read the private GitHub repo, so code goes over a bundle.
+`git pull --ff-only` refuses anything but a fast-forward, which keeps the
+cluster checkout from diverging:
 
 ```bash
-ssh <cluster-user>@<login-host-ip>
-mkdir -p ~/VERIFLOW && cd ~/VERIFLOW   # never outside ~/VERIFLOW
-curl -LsSf https://astral.sh/uv/install.sh | sh        # uv is not installed yet
-export PATH="$HOME/.local/bin:$PATH"                    # adjust to installer output
+# workstation, from E:\Veriflow
+git bundle create veriflow.bundle phase4/hpc-ready
+scp veriflow.bundle <cluster-user>@<login-host-ip>:veriflow-sync.bundle
+ssh <cluster-user>@<login-host-ip> 'cd ~/VERIFLOW && git pull --ff-only ~/veriflow-sync.bundle phase4/hpc-ready'
 ```
 
-## 2. Sync the local repo to `~/VERIFLOW` (laptop → cluster)
+First-time only: `git clone -b phase4/hpc-ready ~/veriflow-<sha>.bundle ~/VERIFLOW`
+(the target must not exist), then
+`curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh`.
+`slurm/_common.sh` puts `~/.local/bin` on PATH for jobs.
 
-From `E:\Veriflow` (this repo, after `git add`/commit of the Phase 4 files):
+## 3. Environment + CPU preflight (job 1, no GPU)
 
 ```bash
-git -C . bundle create /tmp/veriflow.bundle --all
-scp /tmp/veriflow.bundle <cluster-user>@<login-host-ip>:~/veriflow.bundle
-ssh <cluster-user>@<login-host-ip> 'git clone ~/veriflow.bundle ~/VERIFLOW && cd ~/VERIFLOW && git checkout master'
+cd ~/VERIFLOW && export PATH=$HOME/.local/bin:$PATH UV_CACHE_DIR=$HOME/VERIFLOW/.cache/uv
+uv sync --frozen --group gpu            # always name the gpu group
+sbatch slurm/preflight.sbatch           # ~20 s; logs/slurm/veriflow-preflight_<id>.out
 ```
 
-(Alternative: `rsync -a --exclude .venv --exclude .cache --exclude runs . remote:~/VERIFLOW/`.)
-
-## 3. Environment build + CPU preflight (job 1 — no GPU)
+## 4. Model download + GPU check (job 2)
 
 ```bash
-cd ~/VERIFLOW
-sbatch slurm/preflight.sbatch          # ~30 min incl. the CPU test suite
-squeue -u <cluster-user>                    # wait; then check logs/slurm-free output
-less veriflow-preflight_<id>.out       # expect preflight ok:true, tests_exit:0
+export HF_HOME=$HOME/VERIFLOW/.cache/hf
+.venv/bin/hf download Qwen/Qwen2.5-0.5B-Instruct --revision 7ae557604adf67be50417f59c2c2f167def9a775
+sbatch slurm/gpucheck.sbatch            # report: logs/gpucheck_<id>.json; ok:true required
 ```
 
-## 4. Model download + GPU check (job 2 — first GPU use)
+Verify the weights: the safetensors blob name under
+`.cache/hf/hub/models--Qwen--Qwen2.5-0.5B-Instruct/blobs/` must equal both its
+`sha256sum` and the HF API's LFS sha256 for the pinned revision (done:
+`fdf756fa…fb7fe`). `nvml_ok: false` is expected until the node is rebooted
+(CLUSTER_POLICY.md).
+
+## 5. Census (job 4), one job at a time
 
 ```bash
-# on the login node (internet): download ONLY the pinned revisions
-export VERIFLOW_ROOT="$HOME/VERIFLOW"
-export HF_HOME="$VERIFLOW_ROOT/.cache/hf"
-uv run --directory ~/VERIFLOW huggingface-cli download Qwen/Qwen2.5-0.5B-Instruct \
-    --revision 7ae557604adf67be50417f59c2c2f167def9a775 --cache-dir "$HF_HOME"
-uv run --directory ~/VERIFLOW huggingface-cli download Qwen/Qwen2.5-1.5B-Instruct \
-    --revision 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 --cache-dir "$HF_HOME"   # replication model, optional now
-
-cd ~/VERIFLOW
-sbatch slurm/gpucheck.sbatch           # 15 min: driver, torch, bf16, pinned-revision agreement
-less veriflow-gpucheck_<id>.out        # expect gpus:2 rows…, ok:true, models ok:true
+for N in 5 6 7 8 9 10; do
+  J=$(sbatch --parsable --job-name=veriflow-census-n$N --export=ALL,CENSUS_N=$N slurm/census.sbatch)
+  while squeue -h -j $J | grep -q .; do sleep 10; done
+  scontrol show job $J | egrep -o "JobState=[A-Z]+|ExitCode=[0-9:]+|RunTime=[0-9:]+"
+done
 ```
 
-If the driver is too old for the CUDA wheels torch resolved (gpucheck reports
-`compatible: false`), STOP and record it in DECISIONS.md before changing
-versions — the fallback is a CPU-compatible torch build decided in one place.
+Each job writes `runs/census/n<N>_s20261102_j<jobid>/` (never reused):
+generations_raw/generations/classification parquet, q_ref.json, stability,
+coverage_ambiguity, per-prompt and per-mode summaries, params.json and
+manifest.json. Exit 1 means the census completed but the §9.3 gate failed for
+that n. Any other nonzero exit, or an empty run directory, is a crash.
+Measured: about 72 s and about 2.1 GB of VRAM per n on an L40.
 
-## 5. Census (job 4), one GPU, n = 5..10 sequentially, %1
+## 6. Verify, compare, choose n
 
 ```bash
-sbatch --export=CENSUS_N=7 slurm/census.sbatch
-# then 5, 6, 8, 9, 10. One at a time (--array=0-%1 style discipline):
-#   for N in 5 6 7 8 9 10; do sbatch --export=CENSUS_N=$N slurm/census.sbatch; done
+uv run python -m experiments.compare_census runs/census/<run_id> ... \
+    --json runs/census/gate3_comparison.json --md runs/census/gate3_comparison.md
 ```
 
-Each run writes `runs/census/n<N>_s20261102/` with every §11 artifact plus
-`params.json`/`manifest.json`. Runtime target: ≈0.2–0.5 GPU-h per n (measured).
-A nonzero exit means the census itself surfaced failing conditions (also check
-`coverage_ambiguity.json`).
-
-## 6. Choose n and pass Gate 3
-
-Compare per-n reports: base accuracy (want 0.25–0.60), coverage (want ≥ 70 %),
-TV. For the best n, run the gate checker and the §9.3 sample export:
-
-```bash
-uv run python -m experiments.check_construct_gate \
-    --census runs/census/n<best>_s20261102 \
-    --json runs/census/n<best>_s20261102/gate3.json \
-    --audit-sample 200 --freeze-qref
-```
-
-- automated criteria must all pass (checker exit 0);
-- complete `audit_sample.csv` by hand (§9.3.6, ≤ 5 % disagreement);
-- only then does `configs/locked/q_ref.lock` exist. Mock runs can never freeze
-  (the checker refuses them).
-
-Also measure and record in DECISIONS.md: GPU-h per census run, disk per run.
+This re-derives every statistic from classification.parquet, checks the
+manifest (pinned revision, template hash, q_ref hash) and applies the §9.1
+selection rule. For the selected run only, export and judge the blinded audit,
+then freeze (GATE3.md).
 
 ## 7. Go/No-Go escalation paths (§9.3 ladder)
 

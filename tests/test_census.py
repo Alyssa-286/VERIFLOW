@@ -234,7 +234,8 @@ def _mk_gate_passing_census(tmp_path, monkeypatch, tag="42"):
     # what these tests exercise (mock-freeze refusal is tested by
     # test_freeze_refused_for_mock_census)
     doc = json.loads((run_dir / "manifest.json").read_text())
-    doc["model"] = {"repo": "qwen/qwen2.5-0.5b-instruct", "backend": "hf", "revision": "x"}
+    from models.loading import load_spec
+    doc["model"] = {**load_spec("qwen0p5b").as_dict(), "backend": "hf"}
     (run_dir / "manifest.json").write_text(json.dumps(doc))
     return gate, run_dir
 
@@ -258,7 +259,8 @@ def test_freeze_requires_completed_audit_via_cli(tmp_path, monkeypatch, capsys):
     # first gate call exports the blinded sample (no freeze yet)
     gate.main(["--census", str(run_dir), "--audit-sample", "40"])
     df = pd.read_csv(run_dir / "audit_sample.csv", dtype=str).fillna("")
-    df['judgment'] = "AMBIG"  # AMBIG always agrees → disagreement rate 0
+    key = pd.read_csv(run_dir / "audit_key.csv", dtype=str).set_index("row_id")
+    df["judgment"] = [key.loc[r, "primary"] for r in df["row_id"]]  # perfect agreement
     df.to_csv(run_dir / "audit_completed.csv", index=False)
     gate.main(["--census", str(run_dir), "--audit-sample", "40",
                "--audit-results", str(run_dir / "audit_completed.csv"),
@@ -267,6 +269,20 @@ def test_freeze_requires_completed_audit_via_cli(tmp_path, monkeypatch, capsys):
     assert "frozen:" in captured
     lock = json.loads(lock_path.read_text())
     assert lock["payload"]["census_run_id"] == run_dir.name
+    assert lock["payload"]["model"]["revision"] == "7ae557604adf67be50417f59c2c2f167def9a775"
+    assert lock["payload"]["taxonomy_lock_sha256"] and lock["payload"]["prompt_template_sha256"]
+
+
+def test_all_ambig_audit_cannot_pass(tmp_path, monkeypatch):
+    gate, cls, run_dir, blind, key = _mk_census_with_audit(tmp_path, monkeypatch)
+    import pandas as pd
+    df = pd.read_csv(blind, dtype=str).fillna("")
+    df["judgment"] = "AMBIG"
+    df.to_csv(run_dir / "audit_completed.csv", index=False)
+    report = gate.validate_audit(run_dir / "audit_completed.csv")
+    single = (pd.read_csv(key, dtype=str)["matches"].str.count("[|]") == 0).sum()
+    assert single > 0 and report["disagreements"] == single
+    assert (run_dir / "audit_instructions.md").exists()
 
 
 def test_validate_audit_tampered_rows_rejected(tmp_path, monkeypatch):

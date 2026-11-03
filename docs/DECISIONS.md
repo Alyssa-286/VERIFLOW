@@ -54,3 +54,19 @@ The task is two-operand integer addition, not ETH's decimal chain-sum. The reaso
 **Cluster survey (read-only only, no job submitted):** see `docs/CLUSTER_POLICY.md`. Node sit-gpu has 2 GPUs, 96 CPUs, 515 GB RAM, MaxTime infinite. One GPU was held by the user's own `p12-exploratory` job; VERIFLOW arrays therefore throttle to `%1`. GPUs' driver version and bf16 support are gated on `veriflow-gpucheck`, not assumed.
 
 **Not yet done (needs the cluster):** the real census for n=5..10, the q_ref.lock freeze, and the manual audit (§9.3.6). Gate 3 remains open.
+
+## D8: Real census run; Gate 3 FAILS at ladder step 1; q_ref NOT frozen. 2026-11-03
+
+**Executed on SIT HPC** (`~/VERIFLOW`, branch `phase4/hpc-ready`): preflight job 3590 (124 tests green, isolation ok), GPU check 3591 (failed: NVML mismatch, see below), GPU check 3593 (pass), census jobs 3594–3597, 3600, 3602 (n = 5…10; 3598/3599 crashed, see GATE3.md). Each census takes about 66 s of generation (8,000 samples) and about 72 s of job time on one L40. Peak VRAM is about 2.1 GB and the run directory is 1.6–2.4 MB. Cost for all six n is about 0.12 GPU-h, far below the §11 estimate of 0.2–0.5 GPU-h *per n*.
+
+**Result:** every n fails §9.3.1 (coverage 0.02–0.09), §9.3.2 (0–1 modes ≥ 5 %), §9.3.3 (ambiguity 0.12–0.18) and the §9.1 accuracy window (0.015–0.176). Only §9.3.4 TV passes. No n is selected, `q_ref.lock` is not written and no audit is exported. Table and diagnosis: `docs/GATE3.md`, evidence in `docs/gate3_census_comparison.json`.
+
+**Fixes made before or while running (none changes a research definition):**
+- Census sampling now overrides Qwen2.5's shipped `generation_config` (`repetition_penalty=1.1`, T=0.7, top_p=0.8, top_k=20). Without this, `repetition_penalty` 1.1 would have silently applied and the census would not be §11's pure T=1.0/top_p=1.0 sampling. The census refuses to run if any shipped sampling default is left un-overridden.
+- The parsed answer is stored as a string (int64 overflow at n ≥ 9), and raw generations are persisted before classification.
+- The manifest's `prompt_template_sha256` now holds the template hash. It used to hold the census-split hash, which is now `census_prompts_sha256`.
+- Each census job gets its own run id (`n<N>_s<seed>_j<jobid>`); an existing run directory is never overwritten.
+- `preflight.sbatch` syncs the `gpu` group. A bare `uv sync --frozen` would uninstall torch.
+- Audit validity: `AMBIG` agrees only with rows the classifier also found multi-rule. Previously an all-AMBIG audit scored 0 % disagreement. The q_ref lock refuses a missing manifest or an unpinned revision, and records the model revision, prompt/taxonomy hashes, Slurm job and git commit.
+
+**Open decision (researcher):** the §9.3 ladder's next permitted step is an answer-only prompt. That needs (a) a new prompt template, which becomes `prompt.lock` v2, and (b) a max_new_tokens choice. 45 % of all v1 generations hit the 128-token code default, and §11 ties the cap to the not-yet-fixed training max_completion_length. Neither is predeclared, so neither was improvised. The DIGIT-only designed mass and U ≥ 15 % at n ≥ 6 make it likely that a format fix alone cannot reach 70 % coverage beyond n = 5. In that case the ladder continues to subtraction, then M = 3, then the kill rule.

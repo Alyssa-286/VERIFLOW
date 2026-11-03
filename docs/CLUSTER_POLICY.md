@@ -56,3 +56,22 @@ priority; nothing was submitted, modified, or cancelled for this survey.
 
 - driver version on the GPU node; torch booted with bf16; model revision
   agreement with the HF snapshot cache. These are outputs, not assumptions.
+
+## Live re-check and first GPU jobs (2026-11-03)
+
+| Item | Value | Source |
+|---|---|---|
+| Partition / node | `gpu-nodes` up, `sit-gpu` MIXED, 96 CPUs, 515,705 MB, `Gres=gpu:2` | `sinfo`, `scontrol show node` |
+| ErrorEcho activity | user jobs `p12audit` (3589) and `p6audit` (3603), CPU-only (no GRES), running alongside; untouched | `squeue` |
+| GPU (allocated) | NVIDIA L40, 45,709 MiB, compute capability ≥ 8.0, bf16 ok | gpucheck 3593 |
+| Driver | kernel module **580.173.02**; userland libcuda/NVML **580.178.04** (upgraded 2026-08-09, node up 42 days, not rebooted) | `/proc/driver/nvidia/version`, `ls -l libcuda.so.1` |
+| `nvidia-smi` on sit-gpu | **fails: "Driver/library version mismatch"** (NVML is strict). CUDA itself works | gpucheck 3591 |
+| torch / CUDA runtime | 2.8.0+cu128 / 12.8; compatible with driver 580 | gpucheck 3593 |
+| `uv` | 0.13.7 installed at `~/.local/bin/uv` (no shell-profile edit) | installer |
+| GitHub from cluster | private repo is not reachable without credentials; deploy by `git bundle` | `git ls-remote` |
+| HF from login node | reachable; pinned model downloaded to `~/VERIFLOW/.cache/hf` | `hf download` |
+
+Admin action recommended (not ours to take): reboot `sit-gpu` or reload the
+nvidia kernel module so NVML matches 580.178.04. Until then `gpucheck` uses a
+CUDA-driver-API inventory (`nvml_ok: false` in its report). The bf16 kernels
+and the real model generation are the proof that the GPU works.

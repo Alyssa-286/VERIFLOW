@@ -46,6 +46,29 @@ ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_JUDGMENTS = ("ECHO", "CARRY", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG")
 AUDIT_DISAGREEMENT_MAX = 0.05  # §9.3.6
 
+AUDIT_INSTRUCTIONS = """# Manual audit (master plan §9.3.6), census run `{run}`
+
+Do NOT open `audit_key.csv` until every row is judged.
+
+1. Copy `audit_sample.csv` to `audit_completed.csv` in this same directory.
+2. For each of the {n} rows, read `completion`, find the final answer on the
+   `Answer:` line, compare it with `answer_true` (= a + b), and write ONE label
+   in `judgment`: {labels}.
+     I      no parseable integer on the Answer: line, or conflicting Answer: lines
+     ECHO   answer equals a, b, or the digit concatenation of a and b
+     CARRY  answer equals a+b computed with one or more carries dropped
+     TRUNC  answer digits are a proper prefix or suffix of the true sum
+     TRANS  true sum with exactly one adjacent pair of distinct digits swapped
+     DIGIT  same length as the true sum, exactly one digit differs
+     U      any other integer
+     AMBIG  the answer genuinely fits two or more of the rules above
+   Apply the rules in the order listed (the first that fits wins) unless you
+   judge the example truly ambiguous.
+3. Leave every other column unchanged. Validate with
+   `python -m experiments.check_construct_gate --census <this dir> --audit-results <this dir>/audit_completed.csv`.
+   Disagreement must be <= 5 %.
+"""
+
 
 def load_census(run_dir: Path) -> tuple:
     for f in ("classification.parquet", "q_ref.json", "coverage_ambiguity.json",
@@ -76,15 +99,20 @@ def write_audit_sample(cls: pd.DataFrame, run_dir: Path, n: int = 200, seed: int
     key = sample[["row_id", "prompt_id", "mode", "matches"]].rename(columns={"mode": "primary"})
     key_path = run_dir / "audit_key.csv"
     key.to_csv(key_path, index=False)
+    (run_dir / "audit_instructions.md").write_text(AUDIT_INSTRUCTIONS.format(
+        n=len(blind), labels=", ".join(ALLOWED_JUDGMENTS), run=run_dir.name), encoding="utf-8")
     return blind_path, key_path
 
 
 def _audit_agrees(label: str, matches: str) -> bool:
     """A judgment agrees iff it names a rule the classifier itself matched, or
-    the reviewer says the example is genuinely ambiguous (AMBIG)."""
+    the reviewer says AMBIG for an example the classifier also found ambiguous
+    (two or more matching rules). AMBIG on a single-rule example disagrees, so
+    an all-AMBIG audit cannot pass by construction."""
+    rules = [m for m in matches.split("|") if m]
     if label == "AMBIG":
-        return True
-    return label in matches.split("|")
+        return len(rules) >= 2
+    return label in rules
 
 
 def validate_audit(results_path: Path) -> dict:
@@ -129,14 +157,19 @@ def validate_audit(results_path: Path) -> dict:
 
 
 def freeze_qref(run_dir: Path) -> Path:
+    from models.loading import load_spec
     manifest_path = run_dir / "manifest.json"
-    if manifest_path.exists():
-        backend = (json.loads(manifest_path.read_text()).get("model") or {}).get("backend")
-        if backend == "mock":
-            raise RuntimeError(
-                "refusing to freeze a mock census into q_ref.lock — "
-                "only a real (hf-backend) census run may produce the locked reference"
-            )
+    if not manifest_path.exists():
+        raise RuntimeError(f"refusing to freeze: {manifest_path} is missing")
+    manifest = json.loads(manifest_path.read_text())
+    model = manifest.get("model") or {}
+    if model.get("backend") == "mock":
+        raise RuntimeError(
+            "refusing to freeze a mock census into q_ref.lock — "
+            "only a real (hf-backend) census run may produce the locked reference"
+        )
+    if not model.get("name") or model.get("revision") != load_spec(model["name"]).revision:
+        raise RuntimeError("refusing to freeze: census model revision is not the pinned revision")
     q_doc = json.loads((run_dir / "q_ref.json").read_text())
     q_ref_json = run_dir / "q_ref.json"
     payload = {
@@ -146,6 +179,12 @@ def freeze_qref(run_dir: Path) -> Path:
         "q_ref_ci95": q_doc["q_ref_ci95"],
         "base_accuracy": q_doc["base_accuracy"],
         "census_run_id": run_dir.name,
+        "census_slurm_job_id": (manifest.get("slurm") or {}).get("job_id"),
+        "census_git_commit": manifest.get("git_commit"),
+        "model": {"name": model["name"], "repo": model.get("repo"), "revision": model["revision"]},
+        "prompt_template_sha256": manifest.get("prompt_template_sha256"),
+        "prompt_lock_sha256": manifest.get("prompt_lock_sha256"),
+        "taxonomy_lock_sha256": manifest.get("taxonomy_lock_sha256"),
         "census_run_q_ref_sha256": hashlib.sha256(q_ref_json.read_bytes()).hexdigest(),
         "frozen_at": __import__("time").strftime("%Y-%m-%dT%H:%M:%S"),
     }

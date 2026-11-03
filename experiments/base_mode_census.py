@@ -69,7 +69,7 @@ def generate_hf(splits, n_digits, model_name, samples, seed, max_new_tokens, out
         "top_k": 0,
         # Qwen2.5's generation_config.json ships repetition_penalty=1.1 (and
         # T=0.7/top_p=0.8/top_k=20); every one must be overridden or the census
-        # would not be pure ancestral sampling (ง11).
+        # would not be pure ancestral sampling (ยง11).
         "repetition_penalty": 1.0,
         "max_new_tokens": max_new_tokens,
         "num_return_sequences": samples,

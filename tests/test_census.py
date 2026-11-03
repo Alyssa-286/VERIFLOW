@@ -339,3 +339,14 @@ def test_more_errors_needed():
     cls = census_core.classify_generations(gens)
     with pytest.raises(ValueError, match="cluster bootstrap|no incorrect"):
         census_core.cluster_bootstrap_q(cls, n_boot=10)
+
+
+def test_classification_parquet_handles_values_beyond_int64(tmp_path):
+    a, b = 9_876_543_210, 1_234_567_890  # n = 10; ECHO concatenation has 20 digits
+    gens = pd.DataFrame([{"prompt_id": "p0", "a": a, "b": b, "completion": f"Answer: {a}{b}"},
+                         {"prompt_id": "p0", "a": a, "b": b, "completion": f"Answer: {a + b}"}])
+    cls = census_core.classify_generations(gens)
+    assert cls["mode"].tolist() == ["ECHO", "C"]
+    cls.to_parquet(tmp_path / "c.parquet", index=False)
+    back = pd.read_parquet(tmp_path / "c.parquet")
+    assert back["value"].tolist() == [f"{a}{b}", str(a + b)]

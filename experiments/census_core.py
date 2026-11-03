@@ -59,7 +59,9 @@ def classify_generations(gens: pd.DataFrame) -> pd.DataFrame:
                 "matches": "|".join(cl.matches),
                 "correct": cl.correct,
                 "ambiguous": cl.ambiguous,
-                "value": cl.value,
+                # decimal string: parsed answers (e.g. an ECHO concatenation at
+                # n >= 9) can exceed int64, which parquet cannot store
+                "value": None if cl.value is None else str(cl.value),
                 "parse_status": cl.parse_status,
                 "n_chars": len(str(r.completion)),
             }

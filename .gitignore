@@ -10,3 +10,4 @@ checkpoints/
 .cache/
 manifests/
 data/*.parquet
+logs/

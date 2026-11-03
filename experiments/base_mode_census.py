@@ -176,6 +176,10 @@ def main(argv=None) -> int:
         gens = generate_mock(splits, args.n, args.samples, args.seed, mock_probs)
         gens_meta = {"mock_probs": mock_probs, "max_new_tokens": args.max_new_tokens}
 
+    # Persist raw model output before any post-processing, so an analysis bug
+    # can never cost the GPU work.
+    gens.to_parquet(out_dir / "generations_raw.parquet", index=False)
+
     cls = census_core.classify_generations(gens)
     cls["sample_idx"] = gens["sample_idx"].to_numpy()  # row order is preserved
     per_prompt = census_core.per_prompt_summary(cls)

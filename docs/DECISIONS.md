@@ -80,3 +80,9 @@ Approved by the researcher after D8. This is the §9.3 ladder's answer-only-prom
 - Unchanged: census split operands, seeds, 2,000 × 4 sampling, T=1.0/top_p=1.0/top_k=0/repetition_penalty=1.0, taxonomy v1 (`taxonomy.lock` hash unchanged), gate thresholds, §9.1 selection rule.
 - No further wording variants are tried on census data. If v2 fails, the ladder continues to subtraction.
 - Run ids: `n<N>_p2_s20261102_j<job>`.
+
+## D10: Prompt v2 census also fails Gate 3 at every n; q_ref NOT frozen. 2026-11-03
+
+Jobs 3610–3615 (n = 5…10, commit `6c04e29`, preflight 3609) all completed and verified. Every n fails §9.3.1/9.3.2 and §9.1. Ambiguity also fails at n=5. Base accuracy is 0.001–0.024 and coverage 0.003–0.014. 95–97 % of errors are `I`, and about 98 % of those are a bare integer with no `Answer:` prefix: the model obeys "only the final answer" literally. Ladder step 1 (different n, answer-only prompt) is exhausted. Details: `docs/GATE3.md`, `docs/gate3_census_comparison_p2.json`.
+
+Not done, because each is a protocol choice: accepting a bare-integer completion (taxonomy v2, invalidates all censuses), moving to subtraction (ladder step 2, likely to hit the same format failure), or applying the stop rule. No audit was exported and `q_ref.lock` does not exist. Phase 5 must not start.

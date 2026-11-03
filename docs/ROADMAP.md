@@ -13,7 +13,7 @@ The working index of the project. The detailed plan is in [VERIFLOW_MASTER_PLAN.
 | 1 | Foundations and idealized theory | CPU | Nov 2–15 | **Gate 1: mathematics** | ✅ PASS 2026-11-01 ([GATE1.md](GATE1.md)) |
 | 2 | Matched verifiers and realistic-dynamics simulation | CPU | Nov 9–22 | **Gate 2: simulation** | ✅ PASS 2026-11-01 ([GATE2.md](GATE2.md)) |
 | 3 | Construct tooling (task, taxonomy, verifier) | CPU | Nov 23–29 | Unit tests and synthetic recovery ≥ 99 % | ✅ done 2026-11-01 (D6; CARRY/DIGIT overlap flagged) |
-| 4 | Cluster setup and base-policy census | CPU + first GPU | Nov 30–Dec 6 | **Gate 3: construct** | ✗ census run 2026-11-03: Gate 3 FAILS at all n=5..10; q_ref not frozen; answer-only-prompt ladder step awaits a decision ([GATE3.md](GATE3.md)) |
+| 4 | Cluster setup and base-policy census | CPU + first GPU | Nov 30–Dec 6 | **Gate 3: construct** | ✗ census run 2026-11-03: Gate 3 FAILS at all n=5..10; q_ref not frozen; answer-only prompt v2 also failed (D10); next step awaits a decision ([GATE3.md](GATE3.md)) |
 | 5 | Training stack and throughput | GPU | Dec 7–13 | **Gate 4: feasibility** | ☐ |
 | 6 | Pilot | GPU | Dec 14–27 | **Gate 5: empirical engagement** | ☐ |
 | 7 | Pre-registration and confirmatory grid | GPU | Dec 28–Jan 31 | Grid complete, manifests clean | ☐ |
@@ -68,7 +68,8 @@ The working index of the project. The detailed plan is in [VERIFLOW_MASTER_PLAN.
 - ✅ manifest machinery (`scripts/manifest_lib.py`, run_id/run_spec/write/finalize), `veriflow-preflight` / `veriflow-gpucheck` (`scripts/preflight.py`, `scripts/gpucheck.py`, `bin/` wrappers, `slurm/*.sbatch`)
 - ✅ pinned models `configs/model/qwen0p5b.yaml`, `qwen1p5b.yaml`; `configs/locked/prompt.lock`, `taxonomy.lock`; isolated `gpu` dependency group (torch/transformers/accelerate)
 - ✅ on the cluster: `~/VERIFLOW` + `uv sync`, preflight (3590), gpucheck (3593), census n=5..10 (3594–3597, 3600, 3602)
-- ☐ Gate 3: failed at ladder step 1 (D8). Answer-only prompt awaits a decision; then freeze `q_ref.lock` + manual audit
+- ✅ prompt v2 census n=5..10 (3610–3615): also fails (D10)
+- ☐ Gate 3: ladder step 1 exhausted; taxonomy v2 / subtraction / stop awaits a decision; then freeze `q_ref.lock` + manual audit
 
 **Exit (Gate 3):** construct criteria §9.3 (coverage ≥ 70 %, ≥ 3 modes at ≥ 5 % mass, ambiguity ≤ 10 %, split-half TV ≤ 0.03, manual audit). Automation ready; the census run itself decides.
 

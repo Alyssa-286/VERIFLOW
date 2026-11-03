@@ -1,13 +1,13 @@
 # Gate 3: construct validity (Phase 4 exit)
 
-**Status: ✗ FAILED at ladder step 1 (different n), 2026-11-03.** Six real GPU
-censuses (Qwen2.5-0.5B-Instruct @ `7ae557604adf67be50417f59c2c2f167def9a775`,
-n = 5…10, 2,000 prompts × 4 samples each) all fail the automated §9.3 gate and
-the §9.1 accuracy window. **No n is selected. `configs/locked/q_ref.lock` is
-not frozen. No manual audit was exported**, because the audit is defined on the
-selected census and there isn't one. The next ladder step (an answer-only
-prompt) changes the frozen prompt template, so it waits for a researcher
-decision (see "Next step" below and DECISIONS.md D8).
+**Status: ✗ FAILED at ladder step 1, both options exhausted, 2026-11-03.**
+Twelve real GPU censuses (Qwen2.5-0.5B-Instruct @ `7ae557604adf67be50417f59c2c2f167def9a775`,
+n = 5…10, 2,000 prompts × 4 samples each) were run: six with prompt v1 and six
+with the answer-only prompt v2 (D9). All fail the automated §9.3 gate and the
+§9.1 accuracy window. **No n is selected. `configs/locked/q_ref.lock` is not
+frozen. No manual audit was exported**, because the audit is defined on the
+selected census and there isn't one. What comes next is a researcher decision
+(DECISIONS.md D10).
 
 ## What runs the gate
 
@@ -91,18 +91,57 @@ only the parquet type of the parsed answer changed.
   is unlikely to be enough at n ≥ 6.
 - **Ambiguity 0.12–0.18 > 0.10**, driven by CARRY∩DIGIT, as D6 predicted.
 
+## Results: prompt v2 (answer-only), 2026-11-03
+
+Template `Compute {a} + {b}.` / `Reply with only the final answer, exactly in the form` /
+`Answer: <integer>` with max_new_tokens = 256. Everything else is identical to
+v1, including sampling, split, seed and taxonomy. Commit `6c04e29`, preflight 3609.
+Evidence: [gate3_census_comparison_p2.json](gate3_census_comparison_p2.json).
+
+| n | Run ID (Slurm job) | Base acc | q CARRY | q DIGIT | q U | q I | Coverage | Modes ≥5% | Ambiguity | Split-half TV | Gate |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 5 | `n5_p2_s20261102_j3610` (3610) | 0.024 | 0.002 [0.001, 0.004] | 0.012 [0.009, 0.014] | 0.013 [0.011, 0.016] | 0.973 [0.969, 0.976] | 0.014 | 0 | 0.127 | 0.0040 | FAIL (9.3.1, 9.3.2, 9.3.3, 9.1) |
+| 6 | `n6_p2_s20261102_j3611` (3611) | 0.012 | 0.001 [0.000, 0.002] | 0.010 [0.007, 0.012] | 0.021 [0.018, 0.025] | 0.968 [0.964, 0.972] | 0.011 | 0 | 0.071 | 0.0066 | FAIL (9.3.1, 9.3.2, 9.1) |
+| 7 | `n7_p2_s20261102_j3612` (3612) | 0.008 | 0.001 [0.000, 0.002] | 0.007 [0.005, 0.009] | 0.031 [0.027, 0.035] | 0.961 [0.956, 0.966] | 0.008 | 0 | 0.094 | 0.0042 | FAIL (9.3.1, 9.3.2, 9.1) |
+| 8 | `n8_p2_s20261102_j3613` (3613) | 0.005 | 0.001 [0.000, 0.001] | 0.006 [0.004, 0.008] | 0.041 [0.036, 0.045] | 0.953 [0.948, 0.958] | 0.006 | 0 | 0.040 | 0.0047 | FAIL (9.3.1, 9.3.2, 9.1) |
+| 9 | `n9_p2_s20261102_j3614` (3614) | 0.002 | 0.001 [0.000, 0.001] | 0.004 [0.003, 0.006] | 0.035 [0.031, 0.040] | 0.960 [0.955, 0.964] | 0.005 | 0 | 0.098 | 0.0034 | FAIL (9.3.1, 9.3.2, 9.1) |
+| 10 | `n10_p2_s20261102_j3615` (3615) | 0.001 | 0.000 [0.000, 0.001] | 0.003 [0.002, 0.004] | 0.037 [0.033, 0.042] | 0.959 [0.955, 0.964] | 0.003 | 0 | 0.077 | 0.0034 | FAIL (9.3.1, 9.3.2, 9.1) |
+
+ECHO, TRUNC and TRANS are 0.000 (upper CI ≤ 0.001) at every n. Each job took
+23–35 s of generation and ≤ 2.5 GB of VRAM.
+
+**Diagnosis.** The model obeys "only the final answer" literally and drops the
+`Answer:` prefix:
+
+| n | `I` share of errors | `I` that are a bare integer | `I` containing the true sum |
+|---|---|---|---|
+| 5 | 0.973 | 0.983 | 0.347 |
+| 6 | 0.968 | 0.987 | 0.134 |
+| 7 | 0.961 | 0.987 | 0.051 |
+| 8 | 0.953 | 0.986 | 0.019 |
+| 9 | 0.960 | 0.987 | 0.011 |
+| 10 | 0.959 | 0.982 | 0.002 |
+
+Under taxonomy v1 (§9.2) a completion with no `Answer:` line is `I`, so these
+count as format failures. The last column is diagnostic only, not a gate
+statistic. Even if bare integers were accepted, accuracy would only plausibly
+reach the [0.25, 0.60] window at n = 5. Accepting them is a taxonomy change
+(v2), which by §9.2 invalidates every census so far, so it was not done
+without a decision.
+
 ## Failure ladder (§9.3) and next step
 
-1. ~~different n~~: **exhausted (this table)**. Then an answer-only prompt (same step).
+1. ~~different n~~ and ~~answer-only prompt~~: **both exhausted (tables above)**.
 2. 2-operand subtraction.
 3. Accept M = 3 modes.
 4. Stop if fewer than 3 designed modes reach 5 % mass.
 
-The answer-only prompt is the next permitted step. It needs a new prompt
-template (a new `prompt.lock` version, which invalidates the v1 censuses for
-selection) and, ideally, a max_new_tokens decision. Both are research-protocol
-choices, so they are left to the researcher (DECISIONS.md D8). The census
-machinery reruns all six n in about 7 GPU-minutes once the decision is made.
+The next literal ladder step is subtraction. With either prompt, though, the
+dominant failure is answer formatting, not the arithmetic task, so subtraction
+under the same prompts would very likely fail the same way. Choosing between
+subtraction, a taxonomy v2 that accepts a bare-integer completion, or the stop
+rule is a protocol decision left to the researcher (DECISIONS.md D10). A full
+six-n sweep costs about 5 GPU-minutes.
 
 ## Manual audit tooling (ready, unused)
 

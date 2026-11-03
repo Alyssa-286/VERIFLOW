@@ -127,3 +127,7 @@ Across all 24 real censuses (addition ×3 configurations, subtraction ×1; n = 5
 Consequences: no `q_ref.lock`, no manual audit, Phase 5 (GRPO) does not start on this design. Any continuation is a new pre-registered design, e.g. a different base model (the pinned 1.5B replication model), a different task, or a revised §9.3. It must be logged as a protocol amendment before any data are collected.
 
 Total compute for Phase 4: 24 censuses, 6 preflights and 2 GPU checks, about 0.3 GPU-h on one L40.
+
+## D15: Amendment 1: taxonomy v3 (outcome-based partition) and fresh split seed 20261104. 2026-11-03
+
+Full text: `docs/AMENDMENT_1.md`, logged before any v3 data. The taxonomy is an exhaustive, disjoint partition of wrong answers: I, NEG, LEN, ONE_HI, ONE_LO, MULTI. It was chosen after the exploratory censuses (disclosed). The confirmatory census uses a new split seed, 20261104. Thresholds, selection rule, prompt v2, parser v2 and sampling are unchanged. Stop rule: if Gate 3′ fails, the GPU arm ends (Track B).

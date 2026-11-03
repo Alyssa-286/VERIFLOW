@@ -105,3 +105,15 @@ Final configuration: prompt v2 + taxonomy v2, jobs 3620–3625 (commit `47fa0d2`
 Ladder position: step 1 is exhausted. Step 3 (M = 3) is unreachable because at most 2 designed modes reach 5 %. For addition on Qwen2.5-0.5B-Instruct, the §9.3 stop condition (fewer than 3 designed modes at 5 % mass) holds at every n. The one remaining step before the stop rule is 2-operand subtraction (step 2). It requires a subtraction taxonomy (borrow-drop rule, sign handling, synthetic-recovery tests) that the master plan does not define, so it is a new design decision, not a continuation of Phase 4. Options for the researcher: (a) define and run the subtraction step; (b) apply the stop rule and revisit the task, model (e.g. 1.5B replication) or design; (c) amend §9.3, which would be a protocol change requiring disclosure.
 
 Measured cost: 18 censuses plus 3 preflights plus 2 GPU checks, about 0.2 GPU-h total on one L40.
+
+## D13: Ladder step 2: 2-operand subtraction, locked before any subtraction data. 2026-11-03
+
+Approved by the researcher after D12.
+
+- Task: `a - b` with both operands n-digit and a > b (pairs with a = b dropped). Splits come from the seed namespace `sub|<split>` with the same sizes and disjointness rule. Addition splits are bit-identical (tested).
+- Prompt: the v2 wording with `-` (`prompt_sub.lock` payload `99b4bc16…e0b8e`), max_new_tokens 256, taxonomy-v2 parser (bare integers accepted).
+- Taxonomy `sub-v1` (`taxonomy_sub.lock` payload `a02392c2…52a16`): C, I, ECHO, **BORROW** (a non-empty subset of borrows dropped: the column still adds 10, the next column is not decremented; enumerated over the borrow tree), TRUNC, TRANS, DIGIT, U. It is a strict mirror of the addition taxonomy.
+- U-only diagnostics, never designed modes and never in a gate statistic: OPSWAP (a+b), NEG (b−a), SFL (smaller-from-larger per column).
+- Synthetic recovery ≥ 99 % for every designed mode at n = 5, 8 (`tests/test_subtraction.py`).
+- Unchanged: sampling, 2,000 × 4 per n, n = 5…10, every §9.3 threshold and the §9.1 selection rule. Run ids: `n<N>_sub_p2t2_s20261102_j<job>`.
+- Known risk, predeclared: a single dropped borrow is also a one-digit slip, so BORROW∩DIGIT ambiguity is expected (as CARRY∩DIGIT was).

@@ -24,9 +24,20 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from error_modes.classify_errors import ALL_CLASSES, DESIGNED_MODES, TAXONOMY_VERSION, classify
+from error_modes.classify_errors import (ALL_CLASSES, DESIGNED_MODES, DESIGNED_MODES_SUB,
+                                        TAXONOMY_VERSION, classes_for, classify)
 
-INCORRECT_CLASSES = [c for c in ALL_CLASSES if c != "C"]
+INCORRECT_CLASSES = [c for c in ALL_CLASSES if c != "C"]  # addition (default task)
+ANY_DESIGNED_MODE = frozenset(DESIGNED_MODES) | frozenset(DESIGNED_MODES_SUB)
+
+
+def task_of(cls: pd.DataFrame) -> str:
+    """Task recorded by classify_generations; frames without the column are addition."""
+    return str(cls["task"].iloc[0]) if "task" in cls.columns and len(cls) else "add"
+
+
+def incorrect_classes(task: str = "add") -> list[str]:
+    return [c for c in classes_for(task)[0] if c != "C"]
 
 GATE_COVERAGE_MIN = 0.70      # §9.3.1 designed-mode coverage of incorrect outputs
 GATE_MASS_COUNT = 3           # §9.3.2 at least N designed modes with >= MASS_MIN
@@ -39,16 +50,16 @@ GATE_ACC_RANGE = (0.25, 0.60)  # §9.1 base-accuracy window used to choose n
 
 # ---------------------------------------------------------------- classification
 
-def classify_generations(gens: pd.DataFrame) -> pd.DataFrame:
-    """Annotate generations with taxonomy v1 labels. Returns a new frame with
-    per-row: mode, matches, correct, ambiguous, value, parse_status, n_chars."""
+def classify_generations(gens: pd.DataFrame, task: str = "add") -> pd.DataFrame:
+    """Annotate generations with the task's taxonomy labels. Returns a new frame with
+    per-row: mode, matches, correct, ambiguous, value, parse_status, n_chars, task, diag."""
     required = {"prompt_id", "a", "b", "completion"}
     missing = required - set(gens.columns)
     if missing:
         raise ValueError(f"census frame missing columns: {sorted(missing)}")
     rows = []
     for r in gens.itertuples(index=False):
-        cl = classify(int(r.a), int(r.b), str(r.completion))
+        cl = classify(int(r.a), int(r.b), str(r.completion), task)
         rows.append(
             {
                 "prompt_id": r.prompt_id,
@@ -64,6 +75,8 @@ def classify_generations(gens: pd.DataFrame) -> pd.DataFrame:
                 "value": None if cl.value is None else str(cl.value),
                 "parse_status": cl.parse_status,
                 "n_chars": len(str(r.completion)),
+                "task": task,
+                "diag": "|".join(cl.diag),
             }
         )
     return pd.DataFrame(rows)
@@ -73,9 +86,10 @@ def classify_generations(gens: pd.DataFrame) -> pd.DataFrame:
 
 def mode_counts(cls: pd.DataFrame) -> pd.Series:
     """Counts of primary classes among *incorrect* generations, ordered INCORRECT_CLASSES."""
+    classes = incorrect_classes(task_of(cls))
     bad = cls.loc[~cls["correct"], "mode"]
     vc = bad.value_counts()
-    return pd.Series([int(vc.get(c, 0)) for c in INCORRECT_CLASSES], index=INCORRECT_CLASSES, dtype=int)
+    return pd.Series([int(vc.get(c, 0)) for c in classes], index=classes, dtype=int)
 
 
 def q_ref_point(cls: pd.DataFrame) -> dict[str, float]:
@@ -83,19 +97,20 @@ def q_ref_point(cls: pd.DataFrame) -> dict[str, float]:
     n_bad = int(counts.sum())
     if n_bad == 0:
         raise ValueError("census contains no incorrect generations: q_ref is undefined")
-    return {c: float(counts[c] / n_bad) for c in INCORRECT_CLASSES}
+    return {c: float(counts[c] / n_bad) for c in counts.index}
 
 
 def cluster_bootstrap_q(cls: pd.DataFrame, n_boot: int = 2000, seed: int = 0, ci: float = 0.95) -> dict[str, list[float]]:
     """Percentile CI for each class mass, resampling *prompts* with replacement
     (cluster bootstrap). Prompts contribute their samples unaltered."""
+    classes = incorrect_classes(task_of(cls))
     bad = cls.loc[~cls["correct"], ["prompt_id", "mode"]]
     pids = bad["prompt_id"].to_numpy()
     modes = bad["mode"].to_numpy()
     uniq = np.unique(pids)
     if uniq.size < 2:
         raise ValueError("need ≥ 2 prompts with errors for a cluster bootstrap")
-    counts = {c: np.zeros(n_boot) for c in INCORRECT_CLASSES}
+    counts = {c: np.zeros(n_boot) for c in classes}
     rng = np.random.default_rng(seed)
     idx_by_prompt: dict[Any, np.ndarray] = {}
     for uid in uniq:
@@ -103,12 +118,12 @@ def cluster_bootstrap_q(cls: pd.DataFrame, n_boot: int = 2000, seed: int = 0, ci
     for b in range(n_boot):
         chosen = rng.choice(uniq, size=uniq.size, replace=True)
         sel = np.concatenate([idx_by_prompt[u] for u in chosen])
-        cm = pd.Series(modes[sel]).value_counts().reindex(INCORRECT_CLASSES).fillna(0)
+        cm = pd.Series(modes[sel]).value_counts().reindex(classes).fillna(0)
         total = cm.sum()
-        for c in INCORRECT_CLASSES:
+        for c in classes:
             counts[c][b] = cm[c] / total
     lo, hi = (1.0 - ci) / 2 * 100, (1.0 + ci) / 2 * 100
-    return {c: [float(np.percentile(counts[c], lo)), float(np.percentile(counts[c], hi))] for c in INCORRECT_CLASSES}
+    return {c: [float(np.percentile(counts[c], lo)), float(np.percentile(counts[c], hi))] for c in classes}
 
 
 # ---------------------------------------------------------------- §11 summaries
@@ -127,7 +142,7 @@ def split_half_tv(cls: pd.DataFrame) -> float:
     for h in (0, 1):
         sub = cls[cls["half"] == h].reset_index(drop=True)
         qs[h] = q_ref_point(sub)  # raises if a half has zero errors (census too sparse)
-    return 0.5 * sum(abs(qs[0][c] - qs[1][c]) for c in INCORRECT_CLASSES)
+    return 0.5 * sum(abs(qs[0][c] - qs[1][c]) for c in qs[0])
 
 
 def coverage_and_ambiguity(cls: pd.DataFrame) -> dict[str, float]:
@@ -135,8 +150,9 @@ def coverage_and_ambiguity(cls: pd.DataFrame) -> dict[str, float]:
     n_bad = len(bad)
     if n_bad == 0:
         raise ValueError("no incorrect generations")
-    n_designed = int(bad["mode"].isin(DESIGNED_MODES).sum())
-    designed = bad[bad["mode"].isin(DESIGNED_MODES)]
+    modes = classes_for(task_of(cls))[1]
+    n_designed = int(bad["mode"].isin(modes).sum())
+    designed = bad[bad["mode"].isin(modes)]
     n_amb = int(designed["ambiguous"].sum())
     return {
         "coverage": n_designed / n_bad,
@@ -193,10 +209,10 @@ def evaluate_construct_gate(
     and is emitted as a sample file by `check_construct_gate.py`.
     """
     masses_ordered = sorted(
-        ((c, m) for c, m in q.items() if c in DESIGNED_MODES), key=lambda t: -t[1]
+        ((c, m) for c, m in q.items() if c in ANY_DESIGNED_MODE), key=lambda t: -t[1]
     )
     n_heavy = sum(1 for _, m in masses_ordered if m >= GATE_MASS_MIN)
-    light = [c for c, m in q.items() if c in DESIGNED_MODES and m < GATE_MERGE_BELOW]
+    light = [c for c, m in q.items() if c in ANY_DESIGNED_MODE and m < GATE_MERGE_BELOW]
     checks = [
         {"id": "9.3.1 coverage", "value": coverage, "threshold": f">= {GATE_COVERAGE_MIN}",
          "pass": coverage >= GATE_COVERAGE_MIN},

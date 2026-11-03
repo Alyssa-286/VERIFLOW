@@ -1,0 +1,30 @@
+{
+  "payload": {
+    "designed_modes": [
+      "ECHO",
+      "BORROW",
+      "TRUNC",
+      "TRANS",
+      "DIGIT"
+    ],
+    "parser": "v2",
+    "priority": [
+      "C",
+      "I",
+      "ECHO",
+      "BORROW",
+      "TRUNC",
+      "TRANS",
+      "DIGIT",
+      "U"
+    ],
+    "spec": "docs/DECISIONS.md D13",
+    "u_diagnostics": [
+      "OPSWAP",
+      "NEG",
+      "SFL"
+    ],
+    "version": "sub-v1"
+  },
+  "sha256": "a02392c243e55cf8b55b705675786b411261ada09568c920c98933f355e52a16"
+}

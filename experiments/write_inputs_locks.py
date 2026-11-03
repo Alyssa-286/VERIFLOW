@@ -14,8 +14,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from error_modes.classify_errors import DESIGNED_MODES, PRIORITY, TAXONOMY_VERSION
-from vf_datasets.arithmetic import PROMPT_TEMPLATE, PROMPT_TEMPLATE_SHA256, PROMPT_VERSION
+from error_modes.classify_errors import (DESIGNED_MODES, DESIGNED_MODES_SUB, PRIORITY, PRIORITY_SUB,
+                                        SUB_DIAGNOSTICS, SUB_TAXONOMY_VERSION, TAXONOMY_VERSION)
+from vf_datasets.arithmetic import (PROMPT_TEMPLATE, PROMPT_TEMPLATE_SHA256, PROMPT_VERSION,
+                                    SUB_PROMPT_TEMPLATE, SUB_PROMPT_TEMPLATE_SHA256)
 
 from experiments.base_mode_census import DEFAULT_MAX_NEW_TOKENS
 
@@ -44,6 +46,21 @@ def main() -> int:
             "priority": list(PRIORITY),
             "designed_modes": list(DESIGNED_MODES),
             "spec": "docs/VERIFLOW_MASTER_PLAN.md §9.2",
+        },
+    )
+    # Subtraction (§9.3 ladder step 2, D13): separate files so the addition locks are untouched.
+    write_lock("prompt_sub.lock", {"version": PROMPT_VERSION, "task": "sub", "template": SUB_PROMPT_TEMPLATE,
+                                   "sha256": SUB_PROMPT_TEMPLATE_SHA256,
+                                   "max_new_tokens": DEFAULT_MAX_NEW_TOKENS})
+    write_lock(
+        "taxonomy_sub.lock",
+        {
+            "version": SUB_TAXONOMY_VERSION,
+            "parser": TAXONOMY_VERSION,
+            "priority": list(PRIORITY_SUB),
+            "designed_modes": list(DESIGNED_MODES_SUB),
+            "u_diagnostics": list(SUB_DIAGNOSTICS),
+            "spec": "docs/DECISIONS.md D13",
         },
     )
     return 0

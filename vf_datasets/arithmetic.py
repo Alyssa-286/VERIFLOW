@@ -32,6 +32,20 @@ PROMPT_TEMPLATE = (
 )
 PROMPT_TEMPLATE_SHA256 = hashlib.sha256(PROMPT_TEMPLATE.encode()).hexdigest()
 
+# Subtraction (§9.3 ladder step 2, D13): the v2 wording with only the operator
+# changed. Operands satisfy a > b, both n-digit, so a - b >= 1.
+SUB_PROMPT_TEMPLATE = (
+    "Compute {a} - {b}.\n"
+    "Reply with only the final answer, exactly in the form\n"
+    "Answer: <integer>"
+)
+SUB_PROMPT_TEMPLATE_SHA256 = hashlib.sha256(SUB_PROMPT_TEMPLATE.encode()).hexdigest()
+TASKS = ("add", "sub")
+
+
+def prompt_template_sha256(task: str = "add") -> str:
+    return {"add": PROMPT_TEMPLATE_SHA256, "sub": SUB_PROMPT_TEMPLATE_SHA256}[task]
+
 SPLIT_PRECEDENCE = ("eval", "eval_mode", "census", "train")
 DEFAULT_SIZES = {"eval": 1000, "eval_mode": 1000, "census": 2000, "train": 50000}
 
@@ -51,14 +65,20 @@ def _draw(rng: np.random.Generator, n_digits: int, size: int):
     return rng.integers(lo, hi, size=size, dtype=np.int64), rng.integers(lo, hi, size=size, dtype=np.int64)
 
 
-def make_prompt(a: int, b: int) -> str:
-    return PROMPT_TEMPLATE.format(a=a, b=b)
+def make_prompt(a: int, b: int, task: str = "add") -> str:
+    return (SUB_PROMPT_TEMPLATE if task == "sub" else PROMPT_TEMPLATE).format(a=a, b=b)
 
 
-def make_splits(n_digits: int, sizes: dict | None = None, base_seed: int = 20261102) -> dict[str, pd.DataFrame]:
-    """Return {split: DataFrame[prompt_id, a, b, answer, prompt, n_digits]} with disjoint unordered pairs."""
+def make_splits(n_digits: int, sizes: dict | None = None, base_seed: int = 20261102,
+                task: str = "add") -> dict[str, pd.DataFrame]:
+    """Return {split: DataFrame[prompt_id, a, b, answer, prompt, n_digits]} with disjoint unordered pairs.
+
+    task="sub" draws from its own seed namespace, orders each pair so a > b and
+    drops a == b; answer = a - b. task="add" is unchanged bit for bit."""
     if not 1 <= n_digits <= 18:
         raise ValueError("n_digits must be in [1, 18]")
+    if task not in TASKS:
+        raise ValueError(f"unknown task {task!r}")
     sizes = {**DEFAULT_SIZES, **(sizes or {})}
     taken: set = set()
     out = {}
@@ -66,7 +86,7 @@ def make_splits(n_digits: int, sizes: dict | None = None, base_seed: int = 20261
         want = sizes.get(split, 0)
         if want == 0:
             continue
-        rng = np.random.default_rng(_split_seed(base_seed, split, n_digits))
+        rng = np.random.default_rng(_split_seed(base_seed, split if task == "add" else f"sub|{split}", n_digits))
         rows = []
         seen_here: set = set()
         attempts = 0
@@ -76,6 +96,10 @@ def make_splits(n_digits: int, sizes: dict | None = None, base_seed: int = 20261
                 raise RuntimeError(f"cannot draw {want} unique pairs for split {split} at n={n_digits}")
             A, B = _draw(rng, n_digits, 2 * (want - len(rows)) + 16)
             for a, b in zip(A.tolist(), B.tolist()):
+                if task == "sub":
+                    if a == b:
+                        continue
+                    a, b = max(a, b), min(a, b)
                 k = pair_key(a, b)
                 if k in taken or k in seen_here:
                     continue
@@ -85,9 +109,10 @@ def make_splits(n_digits: int, sizes: dict | None = None, base_seed: int = 20261
                     break
         taken |= seen_here
         df = pd.DataFrame(rows, columns=["a", "b"])
-        df.insert(0, "prompt_id", [f"{split}-n{n_digits}-{i:06d}" for i in range(len(df))])
-        df["answer"] = df["a"] + df["b"]
-        df["prompt"] = [make_prompt(a, b) for a, b in zip(df["a"], df["b"])]
+        tag = "" if task == "add" else "sub-"
+        df.insert(0, "prompt_id", [f"{split}-{tag}n{n_digits}-{i:06d}" for i in range(len(df))])
+        df["answer"] = df["a"] - df["b"] if task == "sub" else df["a"] + df["b"]
+        df["prompt"] = [make_prompt(a, b, task) for a, b in zip(df["a"], df["b"])]
         df["n_digits"] = n_digits
         out[split] = df
     return out

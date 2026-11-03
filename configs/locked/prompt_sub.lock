@@ -1,0 +1,10 @@
+{
+  "payload": {
+    "max_new_tokens": 256,
+    "sha256": "27f81be40a6bef610ad76d77088739a8510e835a13e503749a016d60a9e92f13",
+    "task": "sub",
+    "template": "Compute {a} - {b}.\nReply with only the final answer, exactly in the form\nAnswer: <integer>",
+    "version": "v2"
+  },
+  "sha256": "99b4bc16e765bcd494ce719c483d6b12c8abc333d2a21d3e18d506b6b48e0b8e"
+}

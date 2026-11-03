@@ -21,10 +21,12 @@ uv run --frozen --group gpu python -m scripts.gpucheck --models --must-pass
 # Distinct run id per job: a rerun never overwrites an earlier census.
 RUN_DIR="$VERIFLOW_ROOT/runs/census"
 STATUS=0
+CENSUS_TASK="${CENSUS_TASK:-add}"   # add | sub (§9.3 ladder step 2, D13)
+TAG="p2t2"; [ "$CENSUS_TASK" = sub ] && TAG="sub_p2t2"
 uv run --frozen --group gpu python -m experiments.base_mode_census \
-    --n "$CENSUS_N" --model qwen0p5b --samples 4 \
+    --n "$CENSUS_N" --task "$CENSUS_TASK" --model qwen0p5b --samples 4 \
     --seed 20261102 --n-boot 2000 --out "$RUN_DIR" \
-    --run-id "n${CENSUS_N}_p2t2_s20261102_j${SLURM_JOB_ID}" || STATUS=$?
+    --run-id "n${CENSUS_N}_${TAG}_s20261102_j${SLURM_JOB_ID}" || STATUS=$?
 
 # Exit 1 = the census completed but the §9.3 automated gate failed for this n
 # (expected for some n); any other nonzero is a run failure.

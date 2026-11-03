@@ -26,10 +26,10 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from error_modes.classify_errors import DESIGNED_MODES
+from error_modes.classify_errors import classes_for
 from experiments import census_core
 from models.loading import load_spec
-from vf_datasets.arithmetic import PROMPT_TEMPLATE_SHA256
+from vf_datasets.arithmetic import prompt_template_sha256
 
 ARTIFACTS = ("generations.parquet", "classification.parquet", "q_ref.json", "per_mode_lengths.json",
              "difficulty_hist.csv", "per_prompt_summary.parquet", "stability.json",
@@ -58,7 +58,8 @@ def verify_run(run_dir: Path, model: str = "qwen0p5b") -> dict:
         problems.append("manifest model revision != pinned revision")
     if (man.get("model") or {}).get("backend") == "mock":
         problems.append("mock backend")
-    if man.get("prompt_template_sha256") != PROMPT_TEMPLATE_SHA256:
+    task = q_doc.get("task", "add")
+    if man.get("prompt_template_sha256") != prompt_template_sha256(task):
         problems.append("prompt template hash mismatch")
     if man.get("q_ref_sha256") != hashlib.sha256((run_dir / "q_ref.json").read_bytes()).hexdigest():
         problems.append("q_ref.json hash != manifest")
@@ -85,7 +86,7 @@ def verify_run(run_dir: Path, model: str = "qwen0p5b") -> dict:
         problems.append("split-half TV does not match classification.parquet")
 
     checks = {c["id"]: c for c in cov["gate"]}
-    n_heavy = sum(1 for m in DESIGNED_MODES if q[m] >= census_core.GATE_MASS_MIN)
+    n_heavy = sum(1 for m in classes_for(task)[1] if q[m] >= census_core.GATE_MASS_MIN)
     bad = cls[~cls["correct"]]
     return {
         "run_id": run_dir.name,
@@ -93,6 +94,9 @@ def verify_run(run_dir: Path, model: str = "qwen0p5b") -> dict:
         "verified": not problems,
         "problems": problems,
         "n_digits": q_doc["n_digits"],
+        "task": task,
+        "u_diagnostics": (bad.loc[bad["mode"] == "U", "diag"].value_counts(normalize=True).to_dict()
+                          if "diag" in bad.columns else {}),
         "slurm_job_id": (man.get("slurm") or {}).get("job_id"),
         "wall_seconds": (man.get("time") or {}).get("wall_seconds"),
         "hardware": man.get("hardware"),
@@ -125,7 +129,8 @@ def select_n(rows: list[dict]) -> dict:
 
 
 def to_markdown(rows: list[dict]) -> str:
-    modes = ["ECHO", "CARRY", "TRUNC", "TRANS", "DIGIT", "U", "I"]
+    first = rows[0]["q_ref"] if rows else {}
+    modes = [m for m in first if m not in ("U", "I")] + ["U", "I"]
     head = ("| n | Run ID (Slurm job) | Base acc | " + " | ".join(f"q {m} [95% CI]" for m in modes)
             + " | Coverage | Modes ≥5% | Ambiguity | Split-half TV | Gate |")
     sep = "|" + "---|" * (head.count("|") - 1)

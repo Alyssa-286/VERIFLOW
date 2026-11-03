@@ -35,12 +35,12 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from error_modes.classify_errors import TAXONOMY_VERSION
+from error_modes.classify_errors import taxonomy_version_for
 from experiments import census_core
 from experiments.mock_policy import mock_completions
 from scripts.manifest_lib import collect_env, collect_git, lock_hashes
-from vf_datasets.arithmetic import (DEFAULT_SIZES, PROMPT_TEMPLATE_SHA256, PROMPT_VERSION,
-                                    check_disjoint, frame_sha256, make_splits)
+from vf_datasets.arithmetic import (DEFAULT_SIZES, PROMPT_VERSION, check_disjoint, frame_sha256,
+                                    make_splits, prompt_template_sha256)
 
 ROOT = Path(__file__).resolve().parents[1]
 # Locked with prompt v2 (D9): generous enough that truncation never decides an
@@ -139,6 +139,8 @@ def main(argv=None) -> int:
     ap.add_argument("--base-seed", type=int, default=20261102, help="split construction seed")
     ap.add_argument("--max-new-tokens", type=int, default=DEFAULT_MAX_NEW_TOKENS)
     ap.add_argument("--backend", choices=("hf", "mock"), default="hf")
+    ap.add_argument("--task", choices=("add", "sub"), default="add",
+                    help="add: a + b (§9.1); sub: a - b with a > b (§9.3 ladder step 2, D13)")
     ap.add_argument("--mock-probs", default=None, help="JSON file {mode: prob} for the mock backend")
     ap.add_argument("--n-boot", type=int, default=2000)
     ap.add_argument("--out", default="runs/census")
@@ -156,7 +158,9 @@ def main(argv=None) -> int:
     sizes = {**DEFAULT_SIZES}
     if args.size is not None:
         sizes["census"] = args.size
-    splits = make_splits(args.n, sizes=sizes, base_seed=args.base_seed)
+    if args.task == "sub" and args.backend == "mock":
+        raise SystemExit("the mock backend models addition only")
+    splits = make_splits(args.n, sizes=sizes, base_seed=args.base_seed, task=args.task)
     check_disjoint(splits)  # leakage guard; raises on any overlap
 
     mock_probs: dict | None = None
@@ -182,7 +186,7 @@ def main(argv=None) -> int:
     # can never cost the GPU work.
     gens.to_parquet(out_dir / "generations_raw.parquet", index=False)
 
-    cls = census_core.classify_generations(gens)
+    cls = census_core.classify_generations(gens, args.task)
     cls["sample_idx"] = gens["sample_idx"].to_numpy()  # row order is preserved
     per_prompt = census_core.per_prompt_summary(cls)
     q_point = census_core.q_ref_point(cls)
@@ -205,7 +209,8 @@ def main(argv=None) -> int:
 
     q_ref_doc = {
         "n_digits": args.n,
-        "taxonomy_version": TAXONOMY_VERSION,
+        "task": args.task,
+        "taxonomy_version": taxonomy_version_for(args.task),
         "prompt_version": PROMPT_VERSION,
         "q_ref": q_point,
         "q_ref_ci95": q_ci,
@@ -223,7 +228,7 @@ def main(argv=None) -> int:
 
     git = collect_git(ROOT)
     params = {
-        "kind": "census", "n_digits": args.n, "model": spec_meta, "samples": args.samples,
+        "kind": "census", "task": args.task, "n_digits": args.n, "model": spec_meta, "samples": args.samples,
         "seed": args.seed, "base_seed": args.base_seed, "split_sizes": sizes,
         "max_new_tokens": args.max_new_tokens, **gens_meta,
         "prompt_sha256": frame_sha256(splits["census"]),
@@ -242,9 +247,10 @@ def main(argv=None) -> int:
         "run_id": out_dir.name,
         "git_commit": git["commit"], "git_dirty": git["dirty"],
         "model": spec_meta if args.backend == "hf" else {"backend": "mock"},
-        "taxonomy_version": TAXONOMY_VERSION,
+        "task": args.task,
+        "taxonomy_version": taxonomy_version_for(args.task),
         "prompt_version": PROMPT_VERSION,
-        "prompt_template_sha256": PROMPT_TEMPLATE_SHA256,
+        "prompt_template_sha256": prompt_template_sha256(args.task),
         "census_prompts_sha256": params["prompt_sha256"],
         "dataset_sha256": params["dataset_sha256"],
         **lock_hashes(ROOT),

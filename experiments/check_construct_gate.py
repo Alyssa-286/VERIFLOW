@@ -43,7 +43,16 @@ ROOT = Path(__file__).resolve().parents[1]
 # The reviewer may name any rule the classifier knows about, say it is genuinely
 # ambiguous (AMBIG), or disagree outright with the parsed class by naming a
 # designed/U/I mode. AMBIG agrees with any multi-rule match.
-ALLOWED_JUDGMENTS = ("ECHO", "CARRY", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG")
+ALLOWED_JUDGMENTS = ("ECHO", "CARRY", "BORROW", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG")
+# Task-specific wording of the audit rules (addition default; subtraction D13).
+AUDIT_TASK_TEXT = {
+    "add": {"op": "a + b", "res": "sum", "labels": ("ECHO", "CARRY", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG"),
+            "mode_line": "CARRY  answer equals a+b computed with one or more carries dropped"},
+    "sub": {"op": "a - b", "res": "difference",
+            "labels": ("ECHO", "BORROW", "TRUNC", "TRANS", "DIGIT", "U", "I", "AMBIG"),
+            "mode_line": "BORROW answer equals a-b computed with one or more borrows dropped\n"
+                         "            (the column adds 10 but the next column is not decremented)"},
+}
 AUDIT_DISAGREEMENT_MAX = 0.05  # §9.3.6
 
 AUDIT_INSTRUCTIONS = """# Manual audit (master plan §9.3.6), census run `{run}`
@@ -54,14 +63,14 @@ Do NOT open `audit_key.csv` until every row is judged.
 2. For each of the {n} rows, read `completion` and find the final answer: the
    integer on the `Answer:` line, or, if there is no `Answer:` line, the
    completion itself when it is nothing but one integer. Compare it with
-   `answer_true` (= a + b) and write ONE label in `judgment`: {labels}.
+   `answer_true` (= {op}) and write ONE label in `judgment`: {labels}.
      I      no Answer: line and not a bare integer, an unparseable Answer: value,
             or conflicting Answer: lines
      ECHO   answer equals a, b, or the digit concatenation of a and b
-     CARRY  answer equals a+b computed with one or more carries dropped
-     TRUNC  answer digits are a proper prefix or suffix of the true sum
-     TRANS  true sum with exactly one adjacent pair of distinct digits swapped
-     DIGIT  same length as the true sum, exactly one digit differs
+     {mode_line}
+     TRUNC  answer digits are a proper prefix or suffix of the true {res}
+     TRANS  true {res} with exactly one adjacent pair of distinct digits swapped
+     DIGIT  same length as the true {res}, exactly one digit differs
      U      any other integer
      AMBIG  the answer genuinely fits two or more of the rules above
    Apply the rules in the order listed (the first that fits wins) unless you
@@ -94,15 +103,18 @@ def write_audit_sample(cls: pd.DataFrame, run_dir: Path, n: int = 200, seed: int
     sample = bad.sample(n=min(n, len(bad)), random_state=seed).copy()
     sample["row_id"] = [f"AUD-{i:04d}" for i in range(len(sample))]
     blind = sample[["row_id", "prompt_id", "a", "b", "completion"]].copy()
-    blind["answer_true"] = blind["a"] + blind["b"]
+    task = census_core.task_of(cls)
+    blind["answer_true"] = blind["a"] - blind["b"] if task == "sub" else blind["a"] + blind["b"]
     blind["judgment"] = ""
     blind_path = run_dir / "audit_sample.csv"
     blind.to_csv(blind_path, index=False)
     key = sample[["row_id", "prompt_id", "mode", "matches"]].rename(columns={"mode": "primary"})
     key_path = run_dir / "audit_key.csv"
     key.to_csv(key_path, index=False)
+    tt = AUDIT_TASK_TEXT[task]
     (run_dir / "audit_instructions.md").write_text(AUDIT_INSTRUCTIONS.format(
-        n=len(blind), labels=", ".join(ALLOWED_JUDGMENTS), run=run_dir.name), encoding="utf-8")
+        n=len(blind), labels=", ".join(tt["labels"]), run=run_dir.name, op=tt["op"],
+        res=tt["res"], mode_line=tt["mode_line"]), encoding="utf-8")
     return blind_path, key_path
 
 
@@ -176,6 +188,7 @@ def freeze_qref(run_dir: Path) -> Path:
     q_ref_json = run_dir / "q_ref.json"
     payload = {
         "n_digits": q_doc["n_digits"],
+        "task": q_doc.get("task", "add"),
         "taxonomy_version": q_doc["taxonomy_version"],
         "q_ref": q_doc["q_ref"],
         "q_ref_ci95": q_doc["q_ref_ci95"],
@@ -186,8 +199,10 @@ def freeze_qref(run_dir: Path) -> Path:
         "model": {"name": model["name"], "repo": model.get("repo"), "revision": model["revision"]},
         "prompt_version": manifest.get("prompt_version"),
         "prompt_template_sha256": manifest.get("prompt_template_sha256"),
-        "prompt_lock_sha256": manifest.get("prompt_lock_sha256"),
-        "taxonomy_lock_sha256": manifest.get("taxonomy_lock_sha256"),
+        "prompt_lock_sha256": manifest.get("prompt_sub_lock_sha256" if q_doc.get("task") == "sub"
+                                           else "prompt_lock_sha256"),
+        "taxonomy_lock_sha256": manifest.get("taxonomy_sub_lock_sha256" if q_doc.get("task") == "sub"
+                                             else "taxonomy_lock_sha256"),
         "census_run_q_ref_sha256": hashlib.sha256(q_ref_json.read_bytes()).hexdigest(),
         "frozen_at": __import__("time").strftime("%Y-%m-%dT%H:%M:%S"),
     }

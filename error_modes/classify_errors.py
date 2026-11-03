@@ -29,6 +29,31 @@ PRIORITY = ("C", "I", "ECHO", "CARRY", "TRUNC", "TRANS", "DIGIT", "U")
 DESIGNED_MODES = ("ECHO", "CARRY", "TRUNC", "TRANS", "DIGIT")
 ALL_CLASSES = PRIORITY
 
+# Subtraction (§9.3 ladder step 2, DECISIONS.md D13): a - b with a > b. A strict
+# mirror of the addition taxonomy with BORROW in CARRY's place.
+SUB_TAXONOMY_VERSION = "sub-v1"
+PRIORITY_SUB = ("C", "I", "ECHO", "BORROW", "TRUNC", "TRANS", "DIGIT", "U")
+DESIGNED_MODES_SUB = ("ECHO", "BORROW", "TRUNC", "TRANS", "DIGIT")
+# Diagnostic tags on U only (never a designed mode, never in a gate statistic).
+SUB_DIAGNOSTICS = ("OPSWAP", "NEG", "SFL")
+TASKS = ("add", "sub")
+
+
+def classes_for(task: str = "add") -> tuple[tuple, tuple]:
+    """(priority, designed modes) for a task."""
+    if task == "add":
+        return PRIORITY, DESIGNED_MODES
+    if task == "sub":
+        return PRIORITY_SUB, DESIGNED_MODES_SUB
+    raise ValueError(f"unknown task {task!r}")
+
+
+def taxonomy_version_for(task: str = "add") -> str:
+    return TAXONOMY_VERSION if task == "add" else SUB_TAXONOMY_VERSION
+
+
+_ALL_DESIGNED = frozenset(DESIGNED_MODES) | frozenset(DESIGNED_MODES_SUB)
+
 
 @dataclass(frozen=True)
 class Classification:
@@ -36,6 +61,7 @@ class Classification:
     matches: tuple  # every rule that matched (subset of PRIORITY, in priority order)
     value: int | None
     parse_status: str
+    diag: tuple = ()  # subtraction-only diagnostic tags on U (SUB_DIAGNOSTICS)
 
     @property
     def correct(self) -> bool:
@@ -44,7 +70,7 @@ class Classification:
     @property
     def ambiguous(self) -> bool:
         """More than one designed-mode rule matched."""
-        return sum(m in DESIGNED_MODES for m in self.matches) > 1
+        return sum(m in _ALL_DESIGNED for m in self.matches) > 1
 
 
 @lru_cache(maxsize=65536)
@@ -131,6 +157,76 @@ def classify_value(a: int, b: int, value: int | None, parse_status: str = "ok") 
     return Classification(matches[0], tuple(matches), value, parse_status)
 
 
-def classify(a: int, b: int, completion: str) -> Classification:
+@lru_cache(maxsize=65536)
+def borrow_drop_answers(a: int, b: int) -> frozenset:
+    """All differences a - b obtainable by dropping a non-empty subset of the borrows that arise.
+
+    Mirror of carry_drop_answers: column by column from the least significant digit, a column
+    that needs a borrow still adds 10, and the borrow is either taken from the next column
+    (correct) or dropped (the error: the next column is not decremented). Dropping changes later
+    borrows, so the tree is enumerated. Requires a > b >= 0.
+    """
+    da = [int(c) for c in str(a)[::-1]]
+    db = [int(c) for c in str(b)[::-1]]
+    n = max(len(da), len(db))
+    da += [0] * (n - len(da))
+    db += [0] * (n - len(db))
+    out = set()
+
+    def rec(i: int, borrow_in: int, digits: list, dropped: bool):
+        if i == n:
+            if dropped and not borrow_in:
+                out.add(int("".join(map(str, digits[::-1]))))
+            return
+        x = da[i] - borrow_in - db[i]
+        d, borrow = (x + 10, 1) if x < 0 else (x, 0)
+        rec(i + 1, borrow, digits + [d], dropped)
+        if borrow:
+            rec(i + 1, 0, digits + [d], True)
+
+    rec(0, 0, [], False)
+    return frozenset(out)
+
+
+def _smaller_from_larger(a: int, b: int) -> int:
+    """Classic buggy-subtraction rule: each column gives |a_i - b_i|, no borrows."""
+    da, db = str(a)[::-1], str(b)[::-1].ljust(len(str(a)), "0")
+    return int("".join(str(abs(int(x) - int(y))) for x, y in zip(da, db))[::-1])
+
+
+@lru_cache(maxsize=65536)
+def classify_value_sub(a: int, b: int, value: int | None, parse_status: str = "ok") -> Classification:
+    if not a > b >= 0:
+        raise ValueError("subtraction operands must satisfy a > b >= 0")
+    d = a - b
+    if value is None:
+        return Classification("I", ("I",), None, parse_status)
+    if value == d:
+        return Classification("C", ("C",), value, parse_status)
+    matches = []
+    if value in _echo(a, b):
+        matches.append("ECHO")
+    if value >= 0:
+        if value in borrow_drop_answers(a, b):
+            matches.append("BORROW")
+        if _is_trunc(value, d):
+            matches.append("TRUNC")
+        if value in _transpositions(d):
+            matches.append("TRANS")
+        if _is_digit_slip(value, d):
+            matches.append("DIGIT")
+    diag: tuple = ()
+    if not matches:
+        matches.append("U")
+        diag = tuple(t for t, hit in (("OPSWAP", value == a + b), ("NEG", value == -d),
+                                      ("SFL", value == _smaller_from_larger(a, b))) if hit)
+    return Classification(matches[0], tuple(matches), value, parse_status, diag)
+
+
+def classify(a: int, b: int, completion: str, task: str = "add") -> Classification:
     pr: ParseResult = parse_answer(completion)
+    if task == "sub":
+        return classify_value_sub(a, b, pr.value, pr.status)
+    if task != "add":
+        raise ValueError(f"unknown task {task!r}")
     return classify_value(a, b, pr.value, pr.status)

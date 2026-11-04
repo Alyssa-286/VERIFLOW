@@ -260,7 +260,11 @@ def main(argv=None) -> int:
                          "key_file": str(key_path),
                          "status": "pending",
                          "criterion": f"disagreement <= {AUDIT_DISAGREEMENT_MAX}; audit is part of Gate 3"},
-        "synthetic_recovery": "see tests/test_classifier.py (D6: 100% at n=5, n=8)",
+        "synthetic_recovery": {
+            "add": "tests/test_classifier.py (D6: 100% at n=5, n=8)",
+            "sub": "tests/test_subtraction.py (>= 99% for every designed mode at n=5, n=8)",
+            "add_v3": "tests/test_taxonomy_v3.py (>= 99% for every designed mode at n=5, n=8)",
+        }[census_core.scheme_of(cls)],
     }
     audit_result = None
     if args.audit_results:

@@ -135,7 +135,8 @@ def select_n(rows: list[dict]) -> dict:
 
 def to_markdown(rows: list[dict]) -> str:
     first = rows[0]["q_ref"] if rows else {}
-    modes = [m for m in first if m not in ("U", "I")] + ["U", "I"]
+    tail = [m for m in ("U", "I") if m in first]  # taxonomy v3 has no U
+    modes = [m for m in first if m not in ("U", "I")] + tail
     head = ("| n | Run ID (Slurm job) | Base acc | " + " | ".join(f"q {m} [95% CI]" for m in modes)
             + " | Coverage | Modes ≥5% | Ambiguity | Split-half TV | Gate |")
     sep = "|" + "---|" * (head.count("|") - 1)

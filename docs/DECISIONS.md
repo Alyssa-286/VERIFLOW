@@ -148,3 +148,7 @@ Report jobs 3646/3653 crashed formatting the Markdown table (taxonomy v3 has no 
 ## D17: Phase 5 training stack fixed; Gate 4 PASS. 2026-11-04
 
 TRL 1.17.1 is pinned (exact). The backend is HF generate, with no vLLM: NVML is broken on sit-gpu and vLLM conflicts with torch < 2.9. All GRPO settings are pinned in `configs/base.json` (dapo, β 0, group scaling, G 8, 32 prompts/step, neutral sampling asserted at run start, fp32 master weights + bf16 autocast, AdamW, constant LR). Smoke job 3667 passed all 17 checks (resume, exact verifier replay, realised = configured rates). Bench job 3669: 1.09 s/step at G = 8, about 0.16 GPU-h per 500-step run, standard 64-run grid ≈ 10 GPU-h. Details: `docs/GATE4.md`. Open before Stage 3: F̄*/τ* values, q_ref.lock (audit), and the 1.5B arm design.
+
+## D18: F̄* = 0.3 and τ* = 0.9 fixed for the pilot and grid. 2026-11-04
+
+Chosen by the researcher before any pilot data, from Claude's proposal. These are the Gate 2 simulation values (GATE2.md), so the simulation evidence on V vs f_max applies to the same operating point. The matched arm uses F̄ = F̄* and τ = τ* for every configuration. The auxiliary arm uses F̄ ∈ {0.15, 0.45} (0.5× and 1.5× F̄*, §14). Recorded in `configs/base.json`.

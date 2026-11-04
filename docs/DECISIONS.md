@@ -152,3 +152,20 @@ TRL 1.17.1 is pinned (exact). The backend is HF generate, with no vLLM: NVML is 
 ## D18: F̄* = 0.3 and τ* = 0.9 fixed for the pilot and grid. 2026-11-04
 
 Chosen by the researcher before any pilot data, from Claude's proposal. These are the Gate 2 simulation values (GATE2.md), so the simulation evidence on V vs f_max applies to the same operating point. The matched arm uses F̄ = F̄* and τ = τ* for every configuration. The auxiliary arm uses F̄ ∈ {0.15, 0.45} (0.5× and 1.5× F̄*, §14). Recorded in `configs/base.json`.
+
+## D19: Pilot rules pre-declared (Stage 3). 2026-11-04
+
+Logged before any pilot data. Implemented in `experiments/make_pilot_configs.py` and `experiments/pilot_select.py`, tested in `tests/test_pilot.py`.
+
+**LR pilot.** Homogeneous verifier (minimum dispersion at F̄* 0.3, τ* 0.9) × lr ∈ {5e-7, 1e-6, 3e-6}, plus a perfect verifier (τ 1, every f 0) at lr 1e-6, the middle LR (§13 leaves its LR unspecified). Seed 1, 800 steps, eval every 50.
+
+**LR choice** (§13 says "choose the LR" without a rule): pick the highest mean greedy eval accuracy over steps 400–800. A tie within 0.005 goes to the smaller LR. A run below 0.01 accuracy for 3 consecutive evals is ineligible.
+
+**Horizon T.** The §13 rule (90 % of the maximum gain, rounded up to a multiple of 50) with a floor of 100, so the window [T/2, T] holds at least two eval points.
+
+**Heterogeneity pilot.** 4 configurations × seeds {1, 2, 3} at the chosen lr and T:
+- V floor;
+- V at 50 % and 90 % of the feasible range (f_max free);
+- f_max = 0.95 at the minimum feasible V for the mode with the lowest such V.
+
+Generator seed 20261106. Pilot data are exploratory and excluded from the confirmatory set (§13).

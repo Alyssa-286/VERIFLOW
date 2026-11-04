@@ -144,3 +144,7 @@ Coverage is 0.970, ambiguity 0 and split-half TV 0.0177. The q_ref reproduces th
 The 1.5B secondary census (jobs 3647–3652) fails split-half TV within the accuracy window (n = 8: 0.039; n = 9: 0.050). The replication arm's design (larger census or descriptive-only) is decided before Stage 5.
 
 Report jobs 3646/3653 crashed formatting the Markdown table (taxonomy v3 has no U) after writing the selection and audit. The formatter was fixed (`508fefa`) and the tables were regenerated; the audit files were verified byte-identical.
+
+## D17: Phase 5 training stack fixed; Gate 4 PASS. 2026-11-04
+
+TRL 1.17.1 is pinned (exact). The backend is HF generate, with no vLLM: NVML is broken on sit-gpu and vLLM conflicts with torch < 2.9. All GRPO settings are pinned in `configs/base.json` (dapo, β 0, group scaling, G 8, 32 prompts/step, neutral sampling asserted at run start, fp32 master weights + bf16 autocast, AdamW, constant LR). Smoke job 3667 passed all 17 checks (resume, exact verifier replay, realised = configured rates). Bench job 3669: 1.09 s/step at G = 8, about 0.16 GPU-h per 500-step run, standard 64-run grid ≈ 10 GPU-h. Details: `docs/GATE4.md`. Open before Stage 3: F̄*/τ* values, q_ref.lock (audit), and the 1.5B arm design.

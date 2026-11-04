@@ -14,7 +14,7 @@ The working index of the project. The detailed plan is in [VERIFLOW_MASTER_PLAN.
 | 2 | Matched verifiers and realistic-dynamics simulation | CPU | Nov 9–22 | **Gate 2: simulation** | ✅ PASS 2026-11-01 ([GATE2.md](GATE2.md)) |
 | 3 | Construct tooling (task, taxonomy, verifier) | CPU | Nov 23–29 | Unit tests and synthetic recovery ≥ 99 % | ✅ done 2026-11-01 (D6; CARRY/DIGIT overlap flagged) |
 | 4 | Cluster setup and base-policy census | CPU + first GPU | Nov 30–Dec 6 | **Gate 3: construct** | ✅ v1 taxonomy hit the stop rule (D14); **Gate 3′ (Amendment 1) automated PASS at n=5** (D16); manual audit pending, then q_ref.lock ([GATE3.md](GATE3.md)) |
-| 5 | Training stack and throughput | GPU | Dec 7–13 | **Gate 4: feasibility** | ☐ |
+| 5 | Training stack and throughput | GPU | Dec 7–13 | **Gate 4: feasibility** | ✅ PASS 2026-11-04 ([GATE4.md](GATE4.md), D17): smoke 3667, bench 3669; standard grid ≈ 10 GPU-h |
 | 6 | Pilot | GPU | Dec 14–27 | **Gate 5: empirical engagement** | ☐ |
 | 7 | Pre-registration and confirmatory grid | GPU | Dec 28–Jan 31 | Grid complete, manifests clean | ☐ |
 | 8 | Analysis, paper and release | CPU | Feb 1–21 | Draft + reproducibility bundle | ☐ |

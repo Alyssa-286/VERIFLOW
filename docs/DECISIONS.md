@@ -131,3 +131,16 @@ Total compute for Phase 4: 24 censuses, 6 preflights and 2 GPU checks, about 0.3
 ## D15: Amendment 1: taxonomy v3 (outcome-based partition) and fresh split seed 20261104. 2026-11-03
 
 Full text: `docs/AMENDMENT_1.md`, logged before any v3 data. The taxonomy is an exhaustive, disjoint partition of wrong answers: I, NEG, LEN, ONE_HI, ONE_LO, MULTI. It was chosen after the exploratory censuses (disclosed). The confirmatory census uses a new split seed, 20261104. Thresholds, selection rule, prompt v2, parser v2 and sampling are unchanged. Stop rule: if Gate 3′ fails, the GPU arm ends (Track B).
+
+## D16: Gate 3′ automated criteria PASS at n = 5; audit pending. 2026-11-04
+
+Fresh-split census (Amendment 1, seed 20261104), Qwen2.5-0.5B, jobs 3640–3645, commit `ffa27a7`. Selected run `n5_v3_s20261104_j3640`, with base accuracy 0.349 and q_ref:
+- LEN 0.162, MULTI 0.420, ONE_HI 0.181, ONE_LO 0.206;
+- NEG 0.000, merged into LEN per Amendment 1;
+- I 0.030.
+
+Coverage is 0.970, ambiguity 0 and split-half TV 0.0177. The q_ref reproduces the exploratory estimate. The blinded 200-row audit was exported (`audit/gate3v3_n5_s20261104_j3640/`, key kept on the cluster), and `q_ref.lock` will be frozen only after the researcher's judged audit shows ≤ 5 % disagreement.
+
+The 1.5B secondary census (jobs 3647–3652) fails split-half TV within the accuracy window (n = 8: 0.039; n = 9: 0.050). The replication arm's design (larger census or descriptive-only) is decided before Stage 5.
+
+Report jobs 3646/3653 crashed formatting the Markdown table (taxonomy v3 has no U) after writing the selection and audit. The formatter was fixed (`508fefa`) and the tables were regenerated; the audit files were verified byte-identical.

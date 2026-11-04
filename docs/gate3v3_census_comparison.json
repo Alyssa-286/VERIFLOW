@@ -1,0 +1,509 @@
+{
+  "rule": "\u00a79.1: smallest n with base accuracy in [0.25, 0.60] and \u00a79.3 automated gate passing",
+  "runs": [
+    {
+      "ambiguity": 0.0,
+      "base_accuracy": 0.348625,
+      "checks": {
+        "9.1 base accuracy window": true,
+        "9.3.1 coverage": true,
+        "9.3.2 mass": true,
+        "9.3.3 ambiguity": true,
+        "9.3.4 split-half TV": true
+      },
+      "coverage": 0.9698714258299751,
+      "gate_pass_automated": true,
+      "git_commit": "ffa27a74cdf190dd0d3598b8a628d3fa282046d1",
+      "hardware": {
+        "cuda_runtime": "12.8",
+        "device_name": "NVIDIA L40",
+        "peak_vram_mib": 1794.0,
+        "torch": "2.8.0+cu128",
+        "total_vram_mib": 45709
+      },
+      "mechanism_annotation": {
+        "CARRY": 0.1256,
+        "DIGIT": 0.2911,
+        "ECHO": 0.0002,
+        "TRANS": 0.0032,
+        "U": 0.5799
+      },
+      "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "modes_ge_5pct": 4,
+      "n_digits": 5,
+      "n_generations": 8000,
+      "parse_status_of_errors": {
+        "no_answer_line": 154,
+        "ok": 197,
+        "ok_bare": 4857,
+        "unparseable": 3
+      },
+      "problems": [],
+      "q_ref": {
+        "I": 0.030128574170024947,
+        "LEN": 0.16234887737478412,
+        "MULTI": 0.42007292266359625,
+        "NEG": 0.0,
+        "ONE_HI": 0.18096334676645556,
+        "ONE_LO": 0.20648627902513914
+      },
+      "q_ref_ci95": {
+        "I": [
+          0.025488357790450427,
+          0.03525133553144242
+        ],
+        "LEN": [
+          0.14825227791185175,
+          0.1764031017048554
+        ],
+        "MULTI": [
+          0.40100962193325473,
+          0.4383381857424139
+        ],
+        "NEG": [
+          0.0,
+          0.0
+        ],
+        "ONE_HI": [
+          0.16563736620096506,
+          0.19641695443295118
+        ],
+        "ONE_LO": [
+          0.19042876428272285,
+          0.22347429336948427
+        ]
+      },
+      "run_dir": "runs/census/n5_v3_s20261104_j3640",
+      "run_id": "n5_v3_s20261104_j3640",
+      "scheme": "add_v3",
+      "seed": 20261104,
+      "slurm_job_id": "3640",
+      "split_half_tv": 0.017667451808134612,
+      "task": "add",
+      "u_diagnostics": {},
+      "verified": true,
+      "wall_seconds": 21.6
+    },
+    {
+      "ambiguity": 0.0,
+      "base_accuracy": 0.13075,
+      "checks": {
+        "9.1 base accuracy window": false,
+        "9.3.1 coverage": true,
+        "9.3.2 mass": true,
+        "9.3.3 ambiguity": true,
+        "9.3.4 split-half TV": true
+      },
+      "coverage": 0.9811619211964338,
+      "gate_pass_automated": false,
+      "git_commit": "ffa27a74cdf190dd0d3598b8a628d3fa282046d1",
+      "hardware": {
+        "cuda_runtime": "12.8",
+        "device_name": "NVIDIA L40",
+        "peak_vram_mib": 2428.2,
+        "torch": "2.8.0+cu128",
+        "total_vram_mib": 45709
+      },
+      "mechanism_annotation": {
+        "CARRY": 0.0544,
+        "DIGIT": 0.2042,
+        "ECHO": 0.0003,
+        "TRANS": 0.0031,
+        "TRUNC": 0.0009,
+        "U": 0.7372
+      },
+      "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "modes_ge_5pct": 4,
+      "n_digits": 6,
+      "n_generations": 8000,
+      "parse_status_of_errors": {
+        "no_answer_line": 131,
+        "ok": 267,
+        "ok_bare": 6556
+      },
+      "problems": [],
+      "q_ref": {
+        "I": 0.01883807880356629,
+        "LEN": 0.1558815070463043,
+        "MULTI": 0.5841242450388265,
+        "NEG": 0.0001438021282714984,
+        "ONE_HI": 0.07103825136612021,
+        "ONE_LO": 0.16997411561691114
+      },
+      "q_ref_ci95": {
+        "I": [
+          0.015482530744067517,
+          0.022187016347496685
+        ],
+        "LEN": [
+          0.143661741631392,
+          0.16979775786511306
+        ],
+        "MULTI": [
+          0.5671874119513056,
+          0.5999148753024517
+        ],
+        "NEG": [
+          0.0,
+          0.00043446935021979304
+        ],
+        "ONE_HI": [
+          0.06282999891152996,
+          0.07982130424559519
+        ],
+        "ONE_LO": [
+          0.15718108817520027,
+          0.18334209695589485
+        ]
+      },
+      "run_dir": "runs/census/n6_v3_s20261104_j3641",
+      "run_id": "n6_v3_s20261104_j3641",
+      "scheme": "add_v3",
+      "seed": 20261104,
+      "slurm_job_id": "3641",
+      "split_half_tv": 0.027188073552802422,
+      "task": "add",
+      "u_diagnostics": {},
+      "verified": true,
+      "wall_seconds": 26.8
+    },
+    {
+      "ambiguity": 0.0,
+      "base_accuracy": 0.049375,
+      "checks": {
+        "9.1 base accuracy window": false,
+        "9.3.1 coverage": true,
+        "9.3.2 mass": true,
+        "9.3.3 ambiguity": true,
+        "9.3.4 split-half TV": true
+      },
+      "coverage": 0.979750164365549,
+      "gate_pass_automated": false,
+      "git_commit": "ffa27a74cdf190dd0d3598b8a628d3fa282046d1",
+      "hardware": {
+        "cuda_runtime": "12.8",
+        "device_name": "NVIDIA L40",
+        "peak_vram_mib": 1998.1,
+        "torch": "2.8.0+cu128",
+        "total_vram_mib": 45709
+      },
+      "mechanism_annotation": {
+        "CARRY": 0.0219,
+        "DIGIT": 0.1178,
+        "ECHO": 0.0001,
+        "TRANS": 0.0019,
+        "TRUNC": 0.0013,
+        "U": 0.8569
+      },
+      "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "modes_ge_5pct": 3,
+      "n_digits": 7,
+      "n_generations": 8000,
+      "parse_status_of_errors": {
+        "no_answer_line": 150,
+        "ok": 287,
+        "ok_bare": 7164,
+        "unparseable": 4
+      },
+      "problems": [],
+      "q_ref": {
+        "I": 0.02024983563445102,
+        "LEN": 0.17317554240631164,
+        "MULTI": 0.6733727810650888,
+        "NEG": 0.0,
+        "ONE_HI": 0.04142011834319527,
+        "ONE_LO": 0.09178172255095332
+      },
+      "q_ref_ci95": {
+        "I": [
+          0.01706445476416942,
+          0.02358718761336105
+        ],
+        "LEN": [
+          0.16121213306728957,
+          0.18566227875378338
+        ],
+        "MULTI": [
+          0.6590509648121691,
+          0.6884195085219429
+        ],
+        "NEG": [
+          0.0,
+          0.0
+        ],
+        "ONE_HI": [
+          0.0354414153356326,
+          0.047238205289957445
+        ],
+        "ONE_LO": [
+          0.08290369809102803,
+          0.10083280195941906
+        ]
+      },
+      "run_dir": "runs/census/n7_v3_s20261104_j3642",
+      "run_id": "n7_v3_s20261104_j3642",
+      "scheme": "add_v3",
+      "seed": 20261104,
+      "slurm_job_id": "3642",
+      "split_half_tv": 0.02056202124906121,
+      "task": "add",
+      "u_diagnostics": {},
+      "verified": true,
+      "wall_seconds": 27.3
+    },
+    {
+      "ambiguity": 0.0,
+      "base_accuracy": 0.019,
+      "checks": {
+        "9.1 base accuracy window": false,
+        "9.3.1 coverage": true,
+        "9.3.2 mass": false,
+        "9.3.3 ambiguity": true,
+        "9.3.4 split-half TV": true
+      },
+      "coverage": 0.980249745158002,
+      "gate_pass_automated": false,
+      "git_commit": "ffa27a74cdf190dd0d3598b8a628d3fa282046d1",
+      "hardware": {
+        "cuda_runtime": "12.8",
+        "device_name": "NVIDIA L40",
+        "peak_vram_mib": 1839.3,
+        "torch": "2.8.0+cu128",
+        "total_vram_mib": 45709
+      },
+      "mechanism_annotation": {
+        "CARRY": 0.013,
+        "DIGIT": 0.0528,
+        "ECHO": 0.0001,
+        "TRANS": 0.0006,
+        "U": 0.9334
+      },
+      "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "modes_ge_5pct": 2,
+      "n_digits": 8,
+      "n_generations": 8000,
+      "parse_status_of_errors": {
+        "no_answer_line": 153,
+        "ok": 387,
+        "ok_bare": 7306,
+        "unparseable": 2
+      },
+      "problems": [],
+      "q_ref": {
+        "I": 0.019750254841997963,
+        "LEN": 0.1636085626911315,
+        "MULTI": 0.7553516819571865,
+        "NEG": 0.00038226299694189603,
+        "ONE_HI": 0.023190621814475027,
+        "ONE_LO": 0.03771661569826707
+      },
+      "q_ref_ci95": {
+        "I": [
+          0.016634436167104878,
+          0.022979811906889653
+        ],
+        "LEN": [
+          0.1531853683533102,
+          0.174589318254697
+        ],
+        "MULTI": [
+          0.7425514711964694,
+          0.7671970136194974
+        ],
+        "NEG": [
+          0.0,
+          0.0008891231689345359
+        ],
+        "ONE_HI": [
+          0.019233157461567854,
+          0.027512769410816797
+        ],
+        "ONE_LO": [
+          0.03243923232696851,
+          0.043057461983473086
+        ]
+      },
+      "run_dir": "runs/census/n8_v3_s20261104_j3643",
+      "run_id": "n8_v3_s20261104_j3643",
+      "scheme": "add_v3",
+      "seed": 20261104,
+      "slurm_job_id": "3643",
+      "split_half_tv": 0.0028043517406729002,
+      "task": "add",
+      "u_diagnostics": {},
+      "verified": true,
+      "wall_seconds": 25.1
+    },
+    {
+      "ambiguity": 0.0,
+      "base_accuracy": 0.009,
+      "checks": {
+        "9.1 base accuracy window": false,
+        "9.3.1 coverage": true,
+        "9.3.2 mass": false,
+        "9.3.3 ambiguity": true,
+        "9.3.4 split-half TV": true
+      },
+      "coverage": 0.984359233097881,
+      "gate_pass_automated": false,
+      "git_commit": "ffa27a74cdf190dd0d3598b8a628d3fa282046d1",
+      "hardware": {
+        "cuda_runtime": "12.8",
+        "device_name": "NVIDIA L40",
+        "peak_vram_mib": 2452.1,
+        "torch": "2.8.0+cu128",
+        "total_vram_mib": 45709
+      },
+      "mechanism_annotation": {
+        "CARRY": 0.0051,
+        "DIGIT": 0.039,
+        "ECHO": 0.0003,
+        "TRANS": 0.0004,
+        "TRUNC": 0.0003,
+        "U": 0.955
+      },
+      "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "modes_ge_5pct": 2,
+      "n_digits": 9,
+      "n_generations": 8000,
+      "parse_status_of_errors": {
+        "no_answer_line": 122,
+        "ok": 347,
+        "ok_bare": 7457,
+        "unparseable": 2
+      },
+      "problems": [],
+      "q_ref": {
+        "I": 0.01564076690211907,
+        "LEN": 0.14064076690211907,
+        "MULTI": 0.8023461150353178,
+        "NEG": 0.0,
+        "ONE_HI": 0.012235116044399596,
+        "ONE_LO": 0.0291372351160444
+      },
+      "q_ref_ci95": {
+        "I": [
+          0.012744479495268139,
+          0.018520910051611075
+        ],
+        "LEN": [
+          0.1307305121995674,
+          0.15082014766296786
+        ],
+        "MULTI": [
+          0.7904035305095376,
+          0.8136755860594069
+        ],
+        "NEG": [
+          0.0,
+          0.0
+        ],
+        "ONE_HI": [
+          0.009308359403090015,
+          0.015569378977839405
+        ],
+        "ONE_LO": [
+          0.024318317635127283,
+          0.03415259658725125
+        ]
+      },
+      "run_dir": "runs/census/n9_v3_s20261104_j3644",
+      "run_id": "n9_v3_s20261104_j3644",
+      "scheme": "add_v3",
+      "seed": 20261104,
+      "slurm_job_id": "3644",
+      "split_half_tv": 0.011200511197074397,
+      "task": "add",
+      "u_diagnostics": {},
+      "verified": true,
+      "wall_seconds": 32.7
+    },
+    {
+      "ambiguity": 0.0,
+      "base_accuracy": 0.002875,
+      "checks": {
+        "9.1 base accuracy window": false,
+        "9.3.1 coverage": true,
+        "9.3.2 mass": false,
+        "9.3.3 ambiguity": true,
+        "9.3.4 split-half TV": true
+      },
+      "coverage": 0.9796916133884919,
+      "gate_pass_automated": false,
+      "git_commit": "ffa27a74cdf190dd0d3598b8a628d3fa282046d1",
+      "hardware": {
+        "cuda_runtime": "12.8",
+        "device_name": "NVIDIA L40",
+        "peak_vram_mib": 2028.7,
+        "torch": "2.8.0+cu128",
+        "total_vram_mib": 45709
+      },
+      "mechanism_annotation": {
+        "CARRY": 0.0014,
+        "DIGIT": 0.0139,
+        "ECHO": 0.0004,
+        "TRUNC": 0.0004,
+        "U": 0.9839
+      },
+      "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "modes_ge_5pct": 2,
+      "n_digits": 10,
+      "n_generations": 8000,
+      "parse_status_of_errors": {
+        "no_answer_line": 155,
+        "ok": 287,
+        "ok_bare": 7528,
+        "unparseable": 7
+      },
+      "problems": [],
+      "q_ref": {
+        "I": 0.020308386611508085,
+        "LEN": 0.2641343863607873,
+        "MULTI": 0.7008900589193933,
+        "NEG": 0.0,
+        "ONE_HI": 0.004387614391375204,
+        "ONE_LO": 0.010279553716936191
+      },
+      "q_ref_ci95": {
+        "I": [
+          0.017169910105105834,
+          0.023699133862168032
+        ],
+        "LEN": [
+          0.25056218677961345,
+          0.27703131171305173
+        ],
+        "MULTI": [
+          0.6877963689449749,
+          0.7142870572646206
+        ],
+        "NEG": [
+          0.0,
+          0.0
+        ],
+        "ONE_HI": [
+          0.002881844380403458,
+          0.006035026322211364
+        ],
+        "ONE_LO": [
+          0.007397191574724173,
+          0.013413732233840923
+        ]
+      },
+      "run_dir": "runs/census/n10_v3_s20261104_j3645",
+      "run_id": "n10_v3_s20261104_j3645",
+      "scheme": "add_v3",
+      "seed": 20261104,
+      "slurm_job_id": "3645",
+      "split_half_tv": 0.010439249995851009,
+      "task": "add",
+      "u_diagnostics": {},
+      "verified": true,
+      "wall_seconds": 30.3
+    }
+  ],
+  "selection": {
+    "run_id": "n5_v3_s20261104_j3640",
+    "selected_n": 5
+  }
+}

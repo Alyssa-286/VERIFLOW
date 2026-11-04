@@ -1,21 +1,13 @@
 # Gate 3: construct validity (Phase 4 exit)
 
-**Status: ✗ FAILED. §9.3 stop rule reached. Phase 4 is complete. 2026-11-03.**
-Twenty-four real GPU censuses (Qwen2.5-0.5B-Instruct @ `7ae557604adf67be50417f59c2c2f167def9a775`,
-n = 5…10, 2,000 prompts × 4 samples each) were run through every permitted
-ladder step:
-- addition with prompt v1 / taxonomy v1;
-- addition with prompt v2 / taxonomy v1;
-- addition with prompt v2 / taxonomy v2;
-- subtraction (ladder step 2, D13).
+**Status (2026-11-04): Gate 3′ (Amendment 1) PASSES its automated criteria
+at n = 5. The manual audit is pending (the researcher's step), and
+`q_ref.lock` is not frozen yet.**
 
-None passes the automated §9.3 gate. At no n, for either task, do 3 designed
-modes reach 5 % mass. Errors are dominated by `U`, the unstructured class
-(55–97 %). Ladder step 3 (accept M = 3) is therefore unreachable, and the
-predeclared stop condition holds: **the matched-heterogeneity design cannot
-be built on this model and task (§9.3)**. No n is selected. **`configs/locked/q_ref.lock`
-is not frozen, and no manual audit was exported.** Phase 5 must not start on
-this design (DECISIONS.md D14).
+History: the v1/v2 mechanism taxonomy reached the §9.3 stop rule (D14; results
+below). Amendment 1 (D15, `docs/AMENDMENT_1.md`, logged before data) replaced
+it with an outcome partition and a never-generated split (seed 20261104). The
+amended confirmatory census is the "Gate 3′" section directly below.
 
 ## What runs the gate
 
@@ -47,6 +39,64 @@ q_ref.json SHA-256.
 | 5 | Synthetic recovery ≥ 99 % | none | `tests/test_classifier.py`: **green (D6: 100 % at n=5, n=8)** |
 | 6 | Manual audit of 200 errors, disagreement ≤ 5 % | human | `audit_sample.csv` for the selected census |
 | §9.1 | Base accuracy (temperature 1.0) in [0.25, 0.60] to choose n | automatic, per n | census report |
+
+## Gate 3′: taxonomy v3, fresh split 20261104 (confirmatory), 2026-11-04
+
+Census jobs 3640–3645 ran on Qwen2.5-0.5B-Instruct @ `7ae5576`, commit `ffa27a7`
+(clean tree), preflight 3638, one L40, 22–33 s per n. The CPU report ran as job 3646.
+Its table formatter crashed after the selection and audit were written;
+it was fixed in `508fefa` and the tables were regenerated, with the audit files
+byte-identical. All six runs were verified. Evidence:
+[gate3v3_census_comparison.json](gate3v3_census_comparison.json).
+
+| n | Run ID (job) | Base acc | q LEN | q MULTI | q ONE_HI | q ONE_LO | q NEG | q I | Coverage | Modes ≥5% | Ambig. | TV | Gate |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **5** | `n5_v3_s20261104_j3640` (3640) | **0.349** | 0.162 [0.148, 0.176] | 0.420 [0.401, 0.438] | 0.181 [0.166, 0.196] | 0.206 [0.190, 0.223] | 0.000 | 0.030 [0.025, 0.035] | 0.970 | **4** | 0.000 | 0.0177 | **PASS** |
+| 6 | `n6_v3_s20261104_j3641` (3641) | 0.131 | 0.156 | 0.584 | 0.071 | 0.170 | 0.000 | 0.019 | 0.981 | 4 | 0.000 | 0.0272 | FAIL (9.1) |
+| 7 | `n7_v3_s20261104_j3642` (3642) | 0.049 | 0.173 | 0.673 | 0.041 | 0.092 | 0.000 | 0.020 | 0.980 | 3 | 0.000 | 0.0206 | FAIL (9.1) |
+| 8 | `n8_v3_s20261104_j3643` (3643) | 0.019 | 0.164 | 0.755 | 0.023 | 0.038 | 0.000 | 0.020 | 0.980 | 2 | 0.000 | 0.0028 | FAIL (9.3.2, 9.1) |
+| 9 | `n9_v3_s20261104_j3644` (3644) | 0.009 | 0.141 | 0.802 | 0.012 | 0.029 | 0.000 | 0.016 | 0.984 | 2 | 0.000 | 0.0112 | FAIL (9.3.2, 9.1) |
+| 10 | `n10_v3_s20261104_j3645` (3645) | 0.003 | 0.264 | 0.701 | 0.004 | 0.010 | 0.000 | 0.020 | 0.980 | 2 | 0.000 | 0.0104 | FAIL (9.3.2, 9.1) |
+
+**Selection (§9.1): n = 5, run `n5_v3_s20261104_j3640`.**
+- **Pre-declared merge:** q(NEG) = 0.000 < 0.02, so NEG merges into LEN before
+  configuration generation. That leaves 4 designed modes (LEN, MULTI, ONE_HI,
+  ONE_LO), all ≥ 0.16.
+- **Replication of the exploratory estimate:** the fresh-split q_ref
+  closely reproduces the exploratory one (job 3620: 0.167/0.408/0.182/0.211),
+  which is independent evidence that the estimate is stable.
+- **Mechanism annotation (descriptive):** 58 % U, 29 % DIGIT, 13 % CARRY.
+
+**Criteria status:**
+- 9.1 ✔
+- 9.3.1 ✔
+- 9.3.2 ✔
+- 9.3.3 ✔
+- 9.3.4 ✔
+- 9.3.5 ✔ (`tests/test_taxonomy_v3.py`, ≥ 99 % for every designed mode at n = 5 and 8)
+- **9.3.6 pending:** 200-row blinded audit at
+  `audit/gate3v3_n5_s20261104_j3640/` (key kept on the cluster).
+
+### Secondary: Qwen2.5-1.5B-Instruct (replication model; not used for selection)
+
+Jobs 3647–3652 ran, with report 3653. Evidence:
+[gate3v3_q15_census_comparison.json](gate3v3_q15_census_comparison.json).
+
+| n | Run ID | Base acc | Modes ≥5% | TV | Gate |
+|---|---|---|---|---|---|
+| 5 | `n5_v3q15_s20261104_j3647` | 0.840 | 4 | 0.062 | FAIL (TV, 9.1) |
+| 6 | `n6_v3q15_s20261104_j3648` | 0.744 | 4 | 0.029 | FAIL (9.1) |
+| 7 | `n7_v3q15_s20261104_j3649` | 0.636 | 3 | 0.055 | FAIL (TV, 9.1) |
+| 8 | `n8_v3q15_s20261104_j3650` | 0.504 | 3 | 0.039 | FAIL (TV) |
+| 9 | `n9_v3q15_s20261104_j3651` | 0.488 | 3 | 0.050 | FAIL (TV) |
+| 10 | `n10_v3q15_s20261104_j3652` | 0.246 | 3 | 0.015 | FAIL (9.1) |
+
+The 1.5B model is far more accurate and almost always uses the `Answer:`
+format. Within the accuracy window (n = 8, 9) the mode structure is present
+(3 modes ≥ 5 %), but split-half TV fails (0.039, 0.050): its error
+distribution varies more across prompts. The 1.5B replication arm therefore
+needs its own decision before Stage 5. Options: a larger census for 1.5B, or
+reporting it as descriptive only. It does not affect the 0.5B primary arm.
 
 ## Results: prompt v1 + taxonomy v1, 2026-11-03 (SIT HPC, NVIDIA L40, bf16)
 

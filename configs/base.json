@@ -1,0 +1,57 @@
+{
+  "_comment": "Phase 5 training settings (master plan §16.5; D17). Every value that matters to the theory is pinned here, never left to a library default. lr and max_steps are set per run by the pilot rule (§13).",
+  "model": "qwen0p5b",
+  "task": "add",
+  "scheme": "add_v3",
+  "n_digits": 5,
+  "split_seed": 20261104,
+  "max_completion_length": 256,
+  "grpo": {
+    "loss_type": "dapo",
+    "beta": 0.0,
+    "scale_rewards": "group",
+    "num_iterations": 1,
+    "num_generations": 8,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 0,
+    "min_p": null,
+    "repetition_penalty": 1.0,
+    "epsilon": 0.2,
+    "mask_truncated_completions": false,
+    "use_vllm": false,
+    "disable_dropout": true,
+    "shuffle_dataset": true,
+    "log_completions": false
+  },
+  "batch": {
+    "prompts_per_step": 32,
+    "per_device_train_batch_size": 64
+  },
+  "optim": {
+    "optim": "adamw_torch",
+    "lr_scheduler_type": "constant",
+    "warmup_steps": 0,
+    "weight_decay": 0.0,
+    "adam_beta1": 0.9,
+    "adam_beta2": 0.999,
+    "adam_epsilon": 1e-08,
+    "max_grad_norm": 1.0,
+    "bf16": true,
+    "gradient_checkpointing": false
+  },
+  "eval": {
+    "every": 50,
+    "eval_size": 1000,
+    "eval_mode_size": 1000,
+    "batch_size": 250
+  },
+  "save_every": 50,
+  "save_total_limit": 2,
+  "verifier": {
+    "_comment": "Fbar*/tau* are NOT fixed by the master plan. 0.3/0.9 (the Gate 2 simulation values) are engineering placeholders for smoke/bench only; the real values are decided and logged before the Stage 3 pilot.",
+    "Fbar": 0.3,
+    "tau": 0.9,
+    "verifier_seed": 20261105
+  }
+}

@@ -22,8 +22,12 @@ import hashlib
 import struct
 from dataclasses import asdict, dataclass
 
-from error_modes.classify_errors import TAXONOMY_VERSION, classify
+from error_modes.classify_errors import classify, taxonomy_version_for
 from verifiers.matched_verifiers import VerifierConfig
+
+# Classes merged before configuration generation (Amendment 1, D15): a merged class
+# is accepted at its target's rate. Only used when the config has no own rate.
+V3_MERGES = {"NEG": "LEN"}
 
 
 def prf_uniform(*key) -> float:
@@ -54,25 +58,30 @@ class VerifierRecord:
 
 
 class NoisyVerifier:
-    def __init__(self, config: VerifierConfig, verifier_seed: int, run_seed: int, per_string: bool = False):
+    def __init__(self, config: VerifierConfig, verifier_seed: int, run_seed: int, per_string: bool = False,
+                 scheme: str = "add"):
         missing = {"C"} | set(config.f)
         self.config = config
         self.verifier_seed = int(verifier_seed)
         self.run_seed = int(run_seed)
         self.per_string = per_string
+        self.scheme = scheme  # classification scheme: "add", "sub" or "add_v3" (Amendment 1)
+        self._merges = V3_MERGES if scheme == "add_v3" else {}
         self._rho = {"C": float(config.tau), **{k: float(v) for k, v in config.f.items()}}
         if not set(self._rho) >= missing:
             raise ValueError("config lacks some classes")
         self._sha = config.sha256
 
     def rho(self, mode: str) -> float:
+        if mode not in self._rho and mode in self._merges:
+            mode = self._merges[mode]
         try:
             return self._rho[mode]
         except KeyError:
             raise KeyError(f"verifier config {self.config.config_id} has no rate for class {mode!r}") from None
 
     def decide(self, a: int, b: int, completion: str, step: int, prompt_id: str, sample_idx: int) -> VerifierRecord:
-        cl = classify(a, b, completion)
+        cl = classify(a, b, completion, self.scheme)
         csha = hashlib.sha256(completion.encode()).hexdigest()
         rho = self.rho(cl.primary)
         if self.per_string:
@@ -85,7 +94,7 @@ class NoisyVerifier:
             parsed_value="" if cl.value is None else str(cl.value), parse_status=cl.parse_status,
             correct=cl.correct, rho=rho, u=u, reward=1.0 if u < rho else 0.0,
             verifier_config_id=self.config.config_id, verifier_config_sha256=self._sha,
-            taxonomy_version=TAXONOMY_VERSION,
+            taxonomy_version=taxonomy_version_for(self.scheme),
         )
 
 

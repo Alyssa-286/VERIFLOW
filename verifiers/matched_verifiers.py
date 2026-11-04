@@ -323,6 +323,16 @@ def split_heldout(configs: list[VerifierConfig], heldout_frac: float = 1 / 3, se
     return train, held
 
 
+def load_config(path) -> VerifierConfig:
+    """Inverse of VerifierConfig.canonical_json(); the sha256 round-trips exactly."""
+    from pathlib import Path
+
+    d = json.loads(Path(path).read_text())
+    d["f"] = {k: float(v) for k, v in d["f"].items()}
+    d["q_ref"] = {k: float(v) for k, v in d["q_ref"].items()}
+    return VerifierConfig(**d)
+
+
 def save_configs(configs: list[VerifierConfig], path) -> None:
     import pandas as pd
     from pathlib import Path

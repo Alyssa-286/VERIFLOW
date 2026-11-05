@@ -273,7 +273,9 @@ def main(argv=None) -> int:
         "verifier_config_meta": cfg_meta,
         "predictors": {k: (float(v) if hasattr(v, "__float__") else v) for k, v in cfg.predictors().items()},
         "model": spec.as_dict(), "git": collect_git(ROOT), "env": collect_env(), **lock_hashes(ROOT),
-        "slurm": {"job_id": os.environ.get("SLURM_JOB_ID"), "job_name": os.environ.get("SLURM_JOB_NAME")},
+        "slurm": {"job_id": os.environ.get("SLURM_JOB_ID"), "job_name": os.environ.get("SLURM_JOB_NAME"),
+                  "array_job_id": os.environ.get("SLURM_ARRAY_JOB_ID"),
+                  "array_task_id": os.environ.get("SLURM_ARRAY_TASK_ID")},
         "resumed_from": resume, "status": "running", "time": {"start": time.strftime("%Y-%m-%dT%H:%M:%S")},
     }
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, default=str) + "\n")

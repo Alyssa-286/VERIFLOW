@@ -94,3 +94,19 @@ on this model; that is the kill rule, not an excuse to continue).
 Record the D7/D8 entries in `docs/DECISIONS.md` (census artifacts, chosen n,
 measured cost), then start Phase 5 (Gate 4: `train_grpo.py`, `veriflow-smoke`,
 `veriflow-bench`).
+
+## 8. Stage 3: pilot (after q_ref.lock exists)
+
+```bash
+cd ~/VERIFLOW
+# 0. the researcher's audit freezes the lock (GATE3.md); then
+uv run python -m experiments.make_pilot_configs                 # configs/pilot/{lr,het}, runs_lr.csv
+sbatch --array=0-3%1 --export=ALL,RUN_TABLE=configs/pilot/runs_lr.csv,RUN_KIND=pilot,RUNS_ROOT=runs/pilot \
+    slurm/grpo_array.sbatch                                      # 4 LR-pilot runs, one at a time (~1 GPU-h)
+uv run python -m experiments.pilot_select                        # D19 rules -> selection.json, runs_het.csv
+sbatch --array=0-11%1 --export=ALL,RUN_TABLE=configs/pilot/runs_het.csv,RUN_KIND=pilot,RUNS_ROOT=runs/pilot \
+    slurm/grpo_array.sbatch                                      # 12 heterogeneity runs
+```
+
+Commit `configs/pilot/` (configs, run tables, selection) before the heterogeneity array.
+Plumbing dry run: array job 3673 (2 tasks, provisional config, run-kind bench).

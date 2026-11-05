@@ -1,0 +1,58 @@
+{
+  "payload": {
+    "base_accuracy": 0.348625,
+    "census_git_commit": "ffa27a74cdf190dd0d3598b8a628d3fa282046d1",
+    "census_run_id": "n5_v3_s20261104_j3640",
+    "census_run_q_ref_sha256": "f3b607c526586aff3dd46ca345dbf0ee5b1d515de06db990b50ebafe7191f196",
+    "census_slurm_job_id": "3640",
+    "frozen_at": "2026-11-05T12:22:34",
+    "model": {
+      "name": "qwen0p5b",
+      "repo": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775"
+    },
+    "n_digits": 5,
+    "prompt_lock_sha256": "918a83d3305f03d98ae58ed1d28f842833e24ae8623c6b1d215834aed3e492a8",
+    "prompt_template_sha256": "5cd3886434626eab91780d3fdba909ee3c9714fef62f23e55e0a7c0dbb6261c5",
+    "prompt_version": "v2",
+    "q_ref": {
+      "I": 0.030128574170024947,
+      "LEN": 0.16234887737478412,
+      "MULTI": 0.42007292266359625,
+      "NEG": 0.0,
+      "ONE_HI": 0.18096334676645556,
+      "ONE_LO": 0.20648627902513914
+    },
+    "q_ref_ci95": {
+      "I": [
+        0.025488357790450427,
+        0.03525133553144242
+      ],
+      "LEN": [
+        0.14825227791185175,
+        0.1764031017048554
+      ],
+      "MULTI": [
+        0.40100962193325473,
+        0.4383381857424139
+      ],
+      "NEG": [
+        0.0,
+        0.0
+      ],
+      "ONE_HI": [
+        0.16563736620096506,
+        0.19641695443295118
+      ],
+      "ONE_LO": [
+        0.19042876428272285,
+        0.22347429336948427
+      ]
+    },
+    "scheme": "add_v3",
+    "task": "add",
+    "taxonomy_lock_sha256": "6b1ebdf9dd31f17cd8d93ae39f50c2ae0a53c11f0a466bb374fa3fd7d1978069",
+    "taxonomy_version": "v3"
+  },
+  "sha256": "2c34f6d23b7c81cfe0ef6ef7eb3b5207b1b42adb05779760a812ad7cd8bdd5cb"
+}

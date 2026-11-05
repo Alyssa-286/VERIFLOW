@@ -169,3 +169,17 @@ Logged before any pilot data. Implemented in `experiments/make_pilot_configs.py`
 - f_max = 0.95 at the minimum feasible V for the mode with the lowest such V.
 
 Generator seed 20261106. Pilot data are exploratory and excluded from the confirmatory set (§13).
+
+## D20: Gate 3′ audit performed by Claude, not by a person; q_ref.lock frozen. 2026-11-05
+
+**Provenance, stated plainly.** §9.3.6 calls for a manual audit by a person. The researcher did not fill it in. On 2026-11-05 they instructed Claude (Opus 5.5) to "audit on behalf of me and continue". All 200 judgments in `audit_completed.csv` were made by Claude. **The researcher has not reviewed them.** It was not a human audit, and it was not human-reviewed. Any manuscript or pre-registration must describe it this way.
+
+**Method.** Claude worked from `audit_instructions.md` and `audit_sample.csv` (SHA-256 `e76ac745…4403`) only. It did not open `audit_key.csv` (`7cedc4a9…08eb4`), `classification.parquet` or `gate3.json` before validation. 188 rows are bare integers and were labelled by a rule implementation written from the instructions (`audit/gate3v3_n5_s20261104_j3640/tools/ai_label.py`). Claude judged the 12 other rows individually, recorded a reason for each in the script, and cross-checked them against the rules. AUD-0003 (`1,982,300`) was flagged as an interpretive call before validation: it was labelled I under a strict reading of "nothing but one integer", where a lenient reading would give LEN.
+
+**Limitation.** The rule implementation is a second implementation of the same written rules the classifier follows. The audit is therefore close to a differential test of the classifier code. It does not check whether the rules match a human reader's judgment the way §9.3.6 intends.
+
+**Result.** `validate_audit()` found 1 of 200 rows in disagreement (0.005, threshold 0.05). The disagreeing row is AUD-0003, and its judgment was not changed after validation. The automated criteria were recomputed from the census artifacts: coverage 0.970, mass 4 modes, ambiguity 0, split-half TV 0.0177, base accuracy 0.349. All pass.
+
+**Lock.** `configs/locked/q_ref.lock` was frozen on the cluster at 2026-11-05T12:22:34 by `freeze_qref()` called directly. `main()` was not used because it rewrites the audit sample and key. The sample and key hashes were the same before and after. Lock sha256 `2c34f6d2…d5cb` (file SHA-256 `737aab73…076f8f`), run `n5_v3_s20261104_j3640`, Slurm job 3640, Qwen2.5-0.5B-Instruct revision `7ae55760…a775` (the pinned revision), taxonomy-v3 lock `6b1ebdf9…8069`, prompt lock `918a83d3…92a8`, q_ref.json `f3b607c5…f196`.
+
+**Open for the researcher.** The researcher may re-do or review the audit themself before the pre-registration is posted. If a human audit changes the pass/fail outcome, the lock and every configuration generated from it are invalidated.

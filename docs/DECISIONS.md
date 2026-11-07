@@ -303,3 +303,18 @@ The Phase 4 closure (D28, commit `75a819d`, made by another session in this chec
 ## D30: Phase 0 sweep completed; Gate 0 not reopened. 2026-11-07
 
 `docs/RELATED_WORK.md` and `paper/references.bib` (23 entries, every one verified against the arXiv API). Searches: arXiv API by id plus six keyword queries; Plesner et al. read in full. Semantic Scholar forward-citation queries were rate-limited (HTTP 429) throughout, and Google Scholar had no automated access, so coverage of citing work is incomplete; the novelty statement is scoped to that. Closest works: Egashira et al. 2605.02909 (discrete FP patterns; rate not sufficient), Rad et al. 2601.04411 (J-dynamics under block symmetry), and Plesner et al. 2604.07666 (correlation structures at equal rates; per-mode FP not varied). None holds F̄ and τ exactly matched while varying per-mode dispersion and testing held-out prediction. **Gate 0 is not reopened.** The paper will not claim that "structure matters" as new.
+
+## D31: OSF registration recorded: https://osf.io/bs3wq/ (2026-11-07T06:02:21Z). 2026-11-07
+
+Posted on the researcher's explicit authorization, from their signed-in OSF account (Alyssa L, user `e8cfm`; the only contributor; no other authors, affiliations or ethics statements added). Before posting, the account had no projects, registrations or drafts, so there is no duplicate.
+- **Project:** https://osf.io/w8scx/ (public).
+- **Registration:** **https://osf.io/bs3wq/**, template "OSF Preregistration" (schema `697b72f611a8e98484c6139b`), `registration_choice = immediate` (no embargo), subject "Artificial Intelligence and Robotics".
+- **Fields:**
+  - the fields quoting PREREGISTRATION.md reproduce `prereg-v1` verbatim; the other fields summarise it;
+  - the "Other" field holds Addendum 1 (D28/D29) and SHA-256 commitments to every registered artifact (tag `prereg-v1` = `8ff68a3`, grid digest `39815e7b…`, the locks, pilot outputs and code).
+  - The payload's SHA-256 (`093d73aa…5865`) was checked in the browser before submission. The saved responses equal the payload except that OSF HTML-escapes `<` as `&lt;`.
+- **No license chosen.** The repository has none, and the license is the researcher's decision. The project is therefore unlicensed, which is noted for the release.
+- **No files uploaded.** The browser could not reach local files, so the artifacts are committed by hash, to be verified against the repository when it is released.
+- **State at recording:** registered (timestamp fixed, content frozen, archived), `pending_registration_approval = true`. OSF emails the admin an approval link and approves automatically after 48 h without action. It becomes public when approved. **No DOI is assigned yet;** OSF mints one when the registration becomes public.
+
+The confirmatory grid starts after this timestamp.

@@ -299,3 +299,7 @@ The Phase 4 closure (D28, commit `75a819d`, made by another session in this chec
 - Monte Carlo results agree within noise, the run order differing (replicate TV 0.0124 vs 0.0124; P(TV > 0.03) for 3640 0.41 vs 0.41; F̄ p95 deviation 0.020 vs 0.020; matched V Spearman minimum 0.990 vs 0.989).
 - D28 is supported. Phase 4 is recorded as **closed with a documented limitation**, not as an unconditional pass (GATE3.md status line adjusted).
 - The disclosure is filed as `docs/PREREG_ADDENDUM_1.md`, a separate dated document attached to the OSF registration. `prereg-v1` is unchanged.
+
+## D30: Phase 0 sweep completed; Gate 0 not reopened. 2026-11-07
+
+`docs/RELATED_WORK.md` and `paper/references.bib` (23 entries, every one verified against the arXiv API). Searches: arXiv API by id plus six keyword queries; Plesner et al. read in full. Semantic Scholar forward-citation queries were rate-limited (HTTP 429) throughout, and Google Scholar had no automated access, so coverage of citing work is incomplete; the novelty statement is scoped to that. Closest works: Egashira et al. 2605.02909 (discrete FP patterns; rate not sufficient), Rad et al. 2601.04411 (J-dynamics under block symmetry), and Plesner et al. 2604.07666 (correlation structures at equal rates; per-mode FP not varied). None holds F̄ and τ exactly matched while varying per-mode dispersion and testing held-out prediction. **Gate 0 is not reopened.** The paper will not claim that "structure matters" as new.

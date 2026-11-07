@@ -235,3 +235,26 @@ Array 4020 (12 runs from `configs/pilot/runs_het.csv`, `EVAL_EVERY=10`, HEAD `a6
 All 12 runs use the same CPU count. CPU allocation changes speed, not any locked scientific setting (configs, seeds, lr, T, cadence, verifier, data, outcome).
 
 **Revert rule, fixed before the runs start:** if the live median step time exceeds 1.5 × the 1.0 s/step baseline, the remaining pending tasks go back to 4 CPUs and throttle 1. Pending ErrorEcho jobs 3995_20–23 and 4016 are held (reversible) and released automatically when 4020 leaves the queue (4 h cap). No running ErrorEcho job is touched. Log: `~/VERIFLOW/logs/resource_changes.log`.
+
+## D25: Heterogeneity pilot complete; Gate 5 PASS; power gives R = 36 with an estimation-only claim. 2026-11-07
+
+**Runs.** Array 4020 (job IDs 4020 and 4025–4035), 12/12 completed 04:18–04:41Z at commit `a617503` (clean tree), 2 CPUs, one L40 per task, 2 concurrent (D24). Wall time 151–185 s per run, ≈ 0.6 GPU-h in total. Median step 1.02–1.12 s, under the 1.5 s revert threshold. Peak VRAM 22–42 GB. Host RSS ≈ 2.7 GB. `experiments/validate_runs.py` → `results/pilot/validate_het.json`: 12/12 pass on manifest status, args (lr 5e-7, seeds, T 100, eval_every 10), config sha256, q_ref lock, eval steps 0…100 by 10, 100 metrics rows and 25,600 verifier rows each; no errors in the Slurm logs. The validator was first checked on the LR pilot (4/4). Resources: at the researcher's explicit instruction, all ErrorEcho jobs were cancelled at 04:17:53Z (log and recovery snapshot in `~/VERIFLOW/logs/`); the other user's job 3994 was not touched.
+
+**Gate 5 (D21 rule, `experiments/gate5.py` unchanged since `a617503`) → `configs/pilot/gate5.json`: PASS.**
+
+| Config | Most-accepted mode (f) | D (SE) | dF (SE) | dY (SE), descriptive |
+|---|---|---|---|---|
+| vhigh | ONE_HI (0.926) | **+0.232 (0.089), engaged** | **+0.247 (0.052), engaged** | −0.568 (0.276) |
+| vmid | ONE_HI (0.715) | +0.120 (0.103) | +0.107 (0.013), engaged | −0.065 (0.028) |
+| fmaxhigh_vlow | LEN (0.95) | +0.923 (0.810) | −0.050 (0.016), engaged | −0.080 (0.067) |
+
+The high-V verifier differentially amplifies its most-accepted mode and raises the realised false-acceptance rate on wrong rollouts, so the mechanism is engaged within T = 100. Accuracy differences come from 3 seeds and are descriptive only (§13). The high-V seeds span Y = 0.53 to 1.40.
+
+**Power (D23 method, `vf_stats/power_sim.py`) → `configs/pilot/power.json`.**
+- Pilot inputs: σ_s = 0.246 (pooled within-config SD; dominated by vhigh, SD 0.477); raw between-config SD 0.220, so σ_r = σ_s by the D23 floor.
+- Homogeneous logit gain 2.017 (step-0 accuracy 0.408 in every run). Real V range 0.1716.
+- Planning β_V = −4.78 (ρ = −0.407); pessimistic β_V = −2.95 (ρ = −0.251).
+- Power at α = 0.05/3, R = 12/24/36: planning 0.080/0.254/0.434; pessimistic 0.038/0.089/0.167.
+- **§15 rule applied: R = 36 (extended design: 36 matched + 12 auxiliary configurations × 2 seeds = 96 runs). Because power(36) < 0.50, the confirmatory claim is downgraded in advance to estimation with confidence intervals.** H1–H3 statistics and Holm-adjusted p-values are still computed and reported, but no rejection is presented as a confirmatory finding. The Gate 4 kill row (§27) does not apply: the extended design costs ≈ 96 × 3 min ≈ 4.5 GPU-h, far under the available time. Seeds stay at 2 per config, as §14 fixes; adding seeds to raise power would be a protocol change and is not made.
+
+**Hacking threshold (§14: 2.5 × the pilot eval SE).** v0 window accuracy 0.838, single-eval binomial SE √(0.838·0.162/1000) = 0.01165, so **H threshold = 0.029** (replacing the provisional 0.05).

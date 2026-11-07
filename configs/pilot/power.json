@@ -1,0 +1,49 @@
+{
+  "rule": "D23",
+  "alpha": 0.016666666666666666,
+  "sigma": {
+    "sigma_s": 0.24627874114905,
+    "sigma_r": 0.24627874114905,
+    "sigma_r_raw": 0.2199882887564397,
+    "config_means": {
+      "pilot_het_fmaxhigh_vlow": 1.564533096083153,
+      "pilot_het_v0": 1.6444327683698248,
+      "pilot_het_vhigh": 1.0768258110712923,
+      "pilot_het_vmid": 1.5792893591240134
+    }
+  },
+  "gain_pilot": 2.016672228849669,
+  "V_range_real": 0.17157587696332513,
+  "n_design_pool": 40,
+  "rho_median": -0.4070232129615056,
+  "rho_pessimistic": -0.2508065079572792,
+  "rho_by_setting": {
+    "linear-adam": -0.49539233668180765,
+    "linear-adam-coupled": -0.09392307825071589,
+    "linear-adam-drgrpo": -0.48792072641032586,
+    "linear-adam-kl": -0.3532479064196967,
+    "linear-sgd": -0.22239563424967446,
+    "mlp-adam": -0.3368307073346076,
+    "mlp-adam-coupled": -0.5434923298544538,
+    "tabular-adam": -0.4467164023578408,
+    "tabular-sgd": -0.44848456226548816
+  },
+  "powers": {
+    "planning": {
+      "bV": -4.784078185140726,
+      "12": 0.0795,
+      "24": 0.2535,
+      "36": 0.434
+    },
+    "pessimistic": {
+      "bV": -2.9479349216459116,
+      "12": 0.038,
+      "24": 0.0885,
+      "36": 0.1665
+    }
+  },
+  "choice": {
+    "R": 36,
+    "claim": "estimation with CIs (power(36) < 0.50, \u00a715)"
+  }
+}

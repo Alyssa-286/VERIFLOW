@@ -1,0 +1,225 @@
+{
+  "n_runs": 12,
+  "n_ok": 12,
+  "commits": [
+    "a6175032181c3229371d48fd508d3ec61516b879"
+  ],
+  "runs": [
+    {
+      "run": "het_pilot_het_fmaxhigh_vlow_s1",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4025",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "0"
+      },
+      "wall_seconds": 178.6,
+      "peak_vram_mib": 37147.1,
+      "median_step_s": 1.108,
+      "verifier_rows": 25600,
+      "config_sha_file": "9ddedc531f5101851fed097f509888cbfcc4475865f1c1b7bef5410a924bf8f6",
+      "config_sha_manifest": "9ddedc531f5101851fed097f509888cbfcc4475865f1c1b7bef5410a924bf8f6"
+    },
+    {
+      "run": "het_pilot_het_fmaxhigh_vlow_s2",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4026",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "1"
+      },
+      "wall_seconds": 181.0,
+      "peak_vram_mib": 40858.3,
+      "median_step_s": 1.1190000000000002,
+      "verifier_rows": 25600,
+      "config_sha_file": "9ddedc531f5101851fed097f509888cbfcc4475865f1c1b7bef5410a924bf8f6",
+      "config_sha_manifest": "9ddedc531f5101851fed097f509888cbfcc4475865f1c1b7bef5410a924bf8f6"
+    },
+    {
+      "run": "het_pilot_het_fmaxhigh_vlow_s3",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4027",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "2"
+      },
+      "wall_seconds": 157.2,
+      "peak_vram_mib": 25471.7,
+      "median_step_s": 1.032,
+      "verifier_rows": 25600,
+      "config_sha_file": "9ddedc531f5101851fed097f509888cbfcc4475865f1c1b7bef5410a924bf8f6",
+      "config_sha_manifest": "9ddedc531f5101851fed097f509888cbfcc4475865f1c1b7bef5410a924bf8f6"
+    },
+    {
+      "run": "het_pilot_het_v0_s1",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4028",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "3"
+      },
+      "wall_seconds": 151.3,
+      "peak_vram_mib": 23159.2,
+      "median_step_s": 1.019,
+      "verifier_rows": 25600,
+      "config_sha_file": "96b8c7aa0c045311aef1d350ac8cfd6828410a686d729fd9cc54247e1a3f4008",
+      "config_sha_manifest": "96b8c7aa0c045311aef1d350ac8cfd6828410a686d729fd9cc54247e1a3f4008"
+    },
+    {
+      "run": "het_pilot_het_v0_s2",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4029",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "4"
+      },
+      "wall_seconds": 151.6,
+      "peak_vram_mib": 23963.5,
+      "median_step_s": 1.033,
+      "verifier_rows": 25600,
+      "config_sha_file": "96b8c7aa0c045311aef1d350ac8cfd6828410a686d729fd9cc54247e1a3f4008",
+      "config_sha_manifest": "96b8c7aa0c045311aef1d350ac8cfd6828410a686d729fd9cc54247e1a3f4008"
+    },
+    {
+      "run": "het_pilot_het_v0_s3",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4030",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "5"
+      },
+      "wall_seconds": 152.0,
+      "peak_vram_mib": 35402.8,
+      "median_step_s": 1.022,
+      "verifier_rows": 25600,
+      "config_sha_file": "96b8c7aa0c045311aef1d350ac8cfd6828410a686d729fd9cc54247e1a3f4008",
+      "config_sha_manifest": "96b8c7aa0c045311aef1d350ac8cfd6828410a686d729fd9cc54247e1a3f4008"
+    },
+    {
+      "run": "het_pilot_het_vhigh_s1",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4031",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "6"
+      },
+      "wall_seconds": 170.0,
+      "peak_vram_mib": 41856.0,
+      "median_step_s": 1.023,
+      "verifier_rows": 25600,
+      "config_sha_file": "ef6729c881ebf8d66e6fd9a2c499e0229bdb9890df736eec1d93a36d01ca5944",
+      "config_sha_manifest": "ef6729c881ebf8d66e6fd9a2c499e0229bdb9890df736eec1d93a36d01ca5944"
+    },
+    {
+      "run": "het_pilot_het_vhigh_s2",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4032",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "7"
+      },
+      "wall_seconds": 179.7,
+      "peak_vram_mib": 41859.4,
+      "median_step_s": 1.079,
+      "verifier_rows": 25600,
+      "config_sha_file": "ef6729c881ebf8d66e6fd9a2c499e0229bdb9890df736eec1d93a36d01ca5944",
+      "config_sha_manifest": "ef6729c881ebf8d66e6fd9a2c499e0229bdb9890df736eec1d93a36d01ca5944"
+    },
+    {
+      "run": "het_pilot_het_vhigh_s3",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4033",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "8"
+      },
+      "wall_seconds": 172.9,
+      "peak_vram_mib": 41843.5,
+      "median_step_s": 1.06,
+      "verifier_rows": 25600,
+      "config_sha_file": "ef6729c881ebf8d66e6fd9a2c499e0229bdb9890df736eec1d93a36d01ca5944",
+      "config_sha_manifest": "ef6729c881ebf8d66e6fd9a2c499e0229bdb9890df736eec1d93a36d01ca5944"
+    },
+    {
+      "run": "het_pilot_het_vmid_s1",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4034",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "9"
+      },
+      "wall_seconds": 185.4,
+      "peak_vram_mib": 41814.3,
+      "median_step_s": 1.1095000000000002,
+      "verifier_rows": 25600,
+      "config_sha_file": "b3724e323ec9d5d1c7593c6b9900b7cd1319b6252827955b5db0cb0ac7dfae49",
+      "config_sha_manifest": "b3724e323ec9d5d1c7593c6b9900b7cd1319b6252827955b5db0cb0ac7dfae49"
+    },
+    {
+      "run": "het_pilot_het_vmid_s2",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4035",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "10"
+      },
+      "wall_seconds": 177.6,
+      "peak_vram_mib": 41858.2,
+      "median_step_s": 1.091,
+      "verifier_rows": 25600,
+      "config_sha_file": "b3724e323ec9d5d1c7593c6b9900b7cd1319b6252827955b5db0cb0ac7dfae49",
+      "config_sha_manifest": "b3724e323ec9d5d1c7593c6b9900b7cd1319b6252827955b5db0cb0ac7dfae49"
+    },
+    {
+      "run": "het_pilot_het_vmid_s3",
+      "ok": true,
+      "errors": [],
+      "commit": "a6175032181c3229371d48fd508d3ec61516b879",
+      "slurm": {
+        "job_id": "4020",
+        "job_name": "veriflow-pilot",
+        "array_job_id": "4020",
+        "array_task_id": "11"
+      },
+      "wall_seconds": 151.1,
+      "peak_vram_mib": 22201.2,
+      "median_step_s": 1.024,
+      "verifier_rows": 25600,
+      "config_sha_file": "b3724e323ec9d5d1c7593c6b9900b7cd1319b6252827955b5db0cb0ac7dfae49",
+      "config_sha_manifest": "b3724e323ec9d5d1c7593c6b9900b7cd1319b6252827955b5db0cb0ac7dfae49"
+    }
+  ]
+}

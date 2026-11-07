@@ -213,3 +213,13 @@ Logged before any heterogeneity-pilot run was submitted.
 On 2026-11-07 the researcher stated, through the conversation with Claude, that they have reviewed the 200 audit labels in `audit/gate3v3_n5_s20261104_j3640/audit_completed.csv` that Claude produced (D20). They did not report a change to any label. This is the researcher's statement as relayed in the conversation, not a signed record. The judgments in the file are still Claude's (D20).
 
 Re-validation on 2026-11-07 from the frozen files: `validate_audit()` → 200 rows, 1 disagreement (AUD-0003), rate 0.005 ≤ 0.05, pass. Hashes unchanged: `audit_sample.csv` `e76ac745…4403`, `audit_key.csv` `7cedc4a9…8eb4`, `audit_completed.csv` `6bf48840…f101`, `q_ref.lock` file `737aab73…6f8f` (lock sha256 `2c34f6d2…d5cb`). The lock stays valid. Manuscript wording: "labels produced by an AI assistant from the written rules and reviewed by the researcher".
+
+## D23: Power-analysis method fixed before the heterogeneity data (§15). 2026-11-07
+
+Implemented in `vf_stats/power_sim.py`, tested in `tests/test_power_sim.py`, committed before any heterogeneity-pilot output existed. §15 fixes the H1 model (OLS with HC3, configs as units, 2 seeds) and the R rule. The open choices are fixed here:
+- **Seed SD σ_s:** pooled within-config SD of Y over the 4 × 3 heterogeneity-pilot runs.
+- **Config SD σ_r (conservative):** all between-config spread in the pilot counts as noise, floored at σ_s: σ_r = max(√max(var(config means) − σ_s²/3, 0), σ_s).
+- **Effect size:** from the Gate 2 shared-policy outputs, per setting × family, at the earliest simulated horizon where the homogeneous verifier reaches 90 % of its maximal accuracy gain (the pilot's T rule). ρ = β_V · (V range) / (homogeneous logit gain). Computed now: median ρ = −0.407 over 54 setting × family cells (per setting −0.09 to −0.54); pessimistic |ρ| (25th percentile) = 0.251. Real effect β_V = ρ × (pilot v0 mean Y − logit(step-0 accuracy)) / (real V range). The pilot's own β_V estimate is not used, because 4 configs × 3 seeds cannot support it (§13).
+- **Design:** R configs drawn per replicate from the standard grid generated from `q_ref.lock` (V fractions {0, .25, .5, .75, 1} × f_max {free, 0.6, 0.95}, 3 per cell, plus homogeneous; 40 configs, V 0.0028–0.1744). β_f = 0, but f_max stays in the fitted model.
+- **α = 0.05/3:** the Holm threshold H1 must meet if it has the smallest of the three p-values (conservative).
+- **R** = the smallest of {12, 24, 36} with power ≥ 0.80 at the planning effect. If power(36) < 0.50, the claim is downgraded to estimation with CIs, stated in the pre-registration. The pessimistic power is reported alongside.

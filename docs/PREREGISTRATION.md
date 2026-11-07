@@ -29,8 +29,8 @@ GRPO-trained Qwen2.5-0.5B-Instruct, after controlling for the worst-mode rate f_
 | Splits | seed 20261104; train 50,000 / eval 1,000 / eval-mode 1,000, disjoint | Amendment 1 |
 | Matched rates | F̄* = 0.3, τ* = 0.9 | D18 |
 | Training | TRL 1.17.1 GRPO: dapo loss, β = 0, group reward scaling, G = 8, 32 prompts/step, neutral sampling (T 1, top_p 1), full fine-tune with AdamW, constant LR, fp32 + bf16 autocast | `configs/base.json`, D17 |
-| Learning rate | **[PILOT]** by the D19 rule | `configs/pilot/selection.json` |
-| Horizon T | **[PILOT]** by the D19 rule (§13, floor 100) | same |
+| Learning rate | **5e-7**, by the D19 rule on the LR pilot (array 3707; window means 0.883 / 0.869 / 0.770 for 5e-7 / 1e-6 / 3e-6) | `configs/pilot/selection.json`, D21 |
+| Horizon T | **100 steps** by the D19 rule (§13; the 100-step floor binds); outcome window [50, 100] | same, D21 |
 | Verifier | per-mode Bernoulli acceptance; SHA-256 PRF keyed on (verifier seed 20261105, run seed, step, prompt, sample); every decision logged | §10.1, D4 |
 
 **Disclosed protocol changes before this registration:**
@@ -55,9 +55,10 @@ result is reported too.
   used only for H2/H3.
 - **Design size.** Standard (64 runs) or extended: **[RESEARCHER]**. Gate 4
   shows either fits the compute budget (standard ≈ 10 GPU-h).
-- **Replication.** Qwen2.5-1.5B arm **[RESEARCHER]**: its census failed
-  split-half TV within the accuracy window (D16). Options: a larger census, or
-  descriptive-only reporting.
+- **Replication.** **No confirmatory Qwen2.5-1.5B arm.** Its census failed the
+  split-half TV criterion inside the accuracy window (D16: n = 8 TV 0.039, n = 9
+  TV 0.050, threshold 0.03), so no valid q_ref exists for it. No new evidence
+  resolves this. Any 1.5B result would be exploratory and labelled as such.
 
 ## 4. Outcome
 
@@ -65,7 +66,7 @@ result is reported too.
 
     Y = logit(mean greedy held-out accuracy over the eval steps in [T/2, T])
 
-Evaluation uses the 1,000 eval prompts, every 50 steps. Accuracy is clipped to
+Evaluation uses the 1,000 eval prompts, every **10** steps (D21), so the window [50, 100] has 6 evaluation points. Accuracy is clipped to
 [1/2000, 1 − 1/2000] before the logit. The configuration outcome Ȳ is the mean
 over its seeds.
 

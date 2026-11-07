@@ -223,3 +223,15 @@ Implemented in `vf_stats/power_sim.py`, tested in `tests/test_power_sim.py`, com
 - **Design:** R configs drawn per replicate from the standard grid generated from `q_ref.lock` (V fractions {0, .25, .5, .75, 1} × f_max {free, 0.6, 0.95}, 3 per cell, plus homogeneous; 40 configs, V 0.0028–0.1744). β_f = 0, but f_max stays in the fitted model.
 - **α = 0.05/3:** the Holm threshold H1 must meet if it has the smallest of the three p-values (conservative).
 - **R** = the smallest of {12, 24, 36} with power ≥ 0.80 at the planning effect. If power(36) < 0.50, the claim is downgraded to estimation with CIs, stated in the pre-registration. The pessimistic power is reported alongside.
+
+## D24: Heterogeneity-pilot resources (operational, not scientific). 2026-11-07
+
+Array 4020 (12 runs from `configs/pilot/runs_het.csv`, `EVAL_EVERY=10`, HEAD `a617503`) was submitted at 03:56Z with 1 GPU, 4 CPUs, 64 G, `%1`. To use both idle L40s, the still-pending array was updated in place at 04:1xZ, with no resubmission and no task started: **2 CPUs per task (one physical core; `ThreadsPerCore=2`), `ArrayTaskThrottle=2`**, one L40 per task. Evidence:
+- the trainer is single-process (`dataloader_num_workers=0`);
+- CPU work per step is tokenisation, SHA-256 verifier draws and classification of about 256 short completions;
+- the LR pilot (array 3707, run with the script default of 8 CPUs, not 4 as stated earlier) took a median 1.0 s/step, peak VRAM 33–35 GB of 48 GB;
+- no job of any user requests a GPU.
+
+All 12 runs use the same CPU count. CPU allocation changes speed, not any locked scientific setting (configs, seeds, lr, T, cadence, verifier, data, outcome).
+
+**Revert rule, fixed before the runs start:** if the live median step time exceeds 1.5 × the 1.0 s/step baseline, the remaining pending tasks go back to 4 CPUs and throttle 1. Pending ErrorEcho jobs 3995_20–23 and 4016 are held (reversible) and released automatically when 4020 leaves the queue (4 h cap). No running ErrorEcho job is touched. Log: `~/VERIFLOW/logs/resource_changes.log`.

@@ -258,3 +258,16 @@ The high-V verifier differentially amplifies its most-accepted mode and raises t
 - **§15 rule applied: R = 36 (extended design: 36 matched + 12 auxiliary configurations × 2 seeds = 96 runs). Because power(36) < 0.50, the confirmatory claim is downgraded in advance to estimation with confidence intervals.** H1–H3 statistics and Holm-adjusted p-values are still computed and reported, but no rejection is presented as a confirmatory finding. The Gate 4 kill row (§27) does not apply: the extended design costs ≈ 96 × 3 min ≈ 4.5 GPU-h, far under the available time. Seeds stay at 2 per config, as §14 fixes; adding seeds to raise power would be a protocol change and is not made.
 
 **Hacking threshold (§14: 2.5 × the pilot eval SE).** v0 window accuracy 0.838, single-eval binomial SE √(0.838·0.162/1000) = 0.01165, so **H threshold = 0.029** (replacing the provisional 0.05).
+
+## D26: Confirmatory configurations generated (R = 36, extended design); nothing run. 2026-11-07
+
+Generated once on the cluster by `experiments/make_grid_configs.py --R 36` at commit `eb447e0` from `q_ref.lock` (sha256 `2c34f6d2…d5cb`), before any confirmatory run (§14). Seeds: grid generator 20261108, auxiliary 20261109 (generator seed + 1), held-out split 20261109, run order 20261110.
+- **Matched arm:** 36 configs at F̄ = 0.3, τ = 0.9: the homogeneous control plus a balanced cycle over the 14 feasible (V fraction × f_max) cells.
+- **Auxiliary arm:** 12 configs, F̄ ∈ {0.15, 0.45}, 6 each, V fraction 0–0.9, in `configs/grid/auxiliary/` (`aux` is a reserved device name on Windows).
+- **Held-out:** 13 matched configs, stratified by cell, for H2/H3 only.
+- **96 runs:** 48 configs × seeds {1, 2}, lr 5e-7, T 100, eval every 10, in a seeded random order (`configs/grid/runs_grid.csv`).
+- Digest of the concatenated files (sorted paths): `39815e7ba24ddb8cf55b3c20d391cf80d0a2e8e756e0646120fa81fc561352a7`.
+
+Checks:
+- A Windows re-generation gives identical ids, split and run table. Acceptance probabilities agree to ≤ 2.8e-16 and `target_V` metadata to ≤ 4.2e-17 (platform floating point). The cluster files are authoritative, and the validator compares each run's manifest against the canonical config sha256.
+- Two earlier cluster attempts were discarded without use: one crashed (KeyError, `6ba5fb1`); one at `c978599` used an `aux/` directory. Its 48 config files are byte-identical to these.

@@ -11,7 +11,7 @@ over [0, 0.9] (the exact maximum is numerically unreachable at F̄ = 0.45; the p
 Held-out: one third of the matched configs, stratified by grid cell (homogeneous always in training).
 Seeds: 2 per config. The run order is a seeded random permutation, so cluster time cannot confound configs.
 
-Writes configs/grid/{matched,aux}/*.json (+ index.csv), configs/grid/split.json, configs/grid/runs_grid.csv.
+Writes configs/grid/{matched,auxiliary}/*.json (+ index.csv), configs/grid/split.json, configs/grid/runs_grid.csv.
 """
 
 from __future__ import annotations
@@ -24,6 +24,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+# "aux" is a reserved device name on Windows; the auxiliary arm lives in configs/grid/auxiliary/.
 GRID_SEED = 20261108
 SPLIT_SEED = 20261109
 ORDER_SEED = 20261110
@@ -88,13 +89,13 @@ def main(argv=None) -> int:
     out = Path(args.out)
     save_configs(matched, out / "matched")
     if aux:
-        save_configs(aux, out / "aux")
+        save_configs(aux, out / "auxiliary")
     (out / "split.json").write_text(json.dumps({
         "train": sorted(c.config_id for c in train), "heldout": sorted(c.config_id for c in held),
         "seed": SPLIT_SEED, "q_ref_lock_sha256": q["lock_sha256"]}, indent=2) + "\n")
     rows = [{"run_name": f"grid_{c.config_id}_s{s}", "config": f"configs/grid/{arm}/{c.config_id}.json",
              "lr": sel["lr"], "seed": s, "max_steps": sel["T"]}
-            for arm, cs in (("matched", matched), ("aux", aux)) for c in cs for s in SEEDS]
+            for arm, cs in (("matched", matched), ("auxiliary", aux)) for c in cs for s in SEEDS]
     order = np.random.default_rng(ORDER_SEED).permutation(len(rows))
     pd.DataFrame([rows[i] for i in order]).to_csv(out / "runs_grid.csv", index=False)
     print(json.dumps({"R": args.R, "matched": len(matched), "aux": len(aux), "heldout": len(held),

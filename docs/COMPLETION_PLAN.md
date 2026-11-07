@@ -6,6 +6,12 @@ ROADMAP calendar; the master plan stays the scientific reference.
 > **Status 2026-11-07:** Stages 1–2 are done (D16–D20, D22). Stage 3 is in progress: LR pilot
 > complete and analysed (D21). The calendar below is the original plan and is superseded by the
 > dates in DECISIONS.md.
+>
+> **Stage 1 closed 2026-11-07 (D28): closed with a documented limitation.** The
+> split-half TV diagnosis ([PHASE4_CLOSURE.md](PHASE4_CLOSURE.md)) finds no defect.
+> The criterion is noisy at the census size used, the 1.5B failure stands (no 1.5B
+> arm), and the locked q_ref is adequate for the 0.5B estimand. Remaining action
+> (researcher): add the PHASE4_CLOSURE §7 disclosure to the OSF form before posting.
 
 ## Where the project stands
 

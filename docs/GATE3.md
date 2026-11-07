@@ -6,6 +6,20 @@ from the written rules, D20; reviewed by the researcher, D22) has 1/200
 disagreement (AUD-0003, threshold 5 %), re-validated 2026-11-07. `q_ref.lock`
 was frozen 2026-11-05 (lock sha256 `2c34f6d2…d5cb`, file `737aab73…6f8f`).
 
+**Phase 4 closure (2026-11-07, D28): CLOSED WITH DOCUMENTED LIMITATION.** This is
+a post hoc diagnosis of the split-half TV
+([PHASE4_CLOSURE.md](PHASE4_CLOSURE.md), [gate3_tv_diagnosis.json](gate3_tv_diagnosis.json)).
+It found no implementation defect. At 2,000 prompts × 4 samples the TV
+statistic is close to a coin flip:
+- re-randomising the halves would fail the selected 0.5B run with probability 0.41;
+- the 1.5B failures sit at the 74th and 92nd percentiles of their own
+  random-split distributions.
+
+The 1.5B failure stands, and no 1.5B claim is made. The locked q_ref is
+supported by an independent-split replicate (TV 0.012) and bootstrap
+propagation. The pass above is reported with this limitation. It is not
+re-labelled.
+
 History: the v1/v2 mechanism taxonomy reached the §9.3 stop rule (D14; results
 below). Amendment 1 (D15, `docs/AMENDMENT_1.md`, logged before data) replaced
 it with an outcome partition and a never-generated split (seed 20261104). The
@@ -99,6 +113,11 @@ format. Within the accuracy window (n = 8, 9) the mode structure is present
 distribution varies more across prompts. The 1.5B replication arm therefore
 needs its own decision before Stage 5. Options: a larger census for 1.5B, or
 reporting it as descriptive only. It does not affect the 0.5B primary arm.
+
+**Resolved (D28).** No confirmatory 1.5B arm. The post hoc diagnosis attributes
+the failure to sampling variability under strong prompt clustering. It is not a
+split artifact and not concentrated in rare classes. The declared failure is
+not overturned. See [PHASE4_CLOSURE.md](PHASE4_CLOSURE.md).
 
 ## Results: prompt v1 + taxonomy v1, 2026-11-03 (SIT HPC, NVIDIA L40, bf16)
 

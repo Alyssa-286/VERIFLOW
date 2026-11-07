@@ -13,7 +13,7 @@ The working index of the project. The detailed plan is in [VERIFLOW_MASTER_PLAN.
 | 1 | Foundations and idealized theory | CPU | Nov 2–15 | **Gate 1: mathematics** | ✅ PASS 2026-11-01 ([GATE1.md](GATE1.md)) |
 | 2 | Matched verifiers and realistic-dynamics simulation | CPU | Nov 9–22 | **Gate 2: simulation** | ✅ PASS 2026-11-01 ([GATE2.md](GATE2.md)) |
 | 3 | Construct tooling (task, taxonomy, verifier) | CPU | Nov 23–29 | Unit tests and synthetic recovery ≥ 99 % | ✅ done 2026-11-01 (D6; CARRY/DIGIT overlap flagged) |
-| 4 | Cluster setup and base-policy census | CPU + first GPU | Nov 30–Dec 6 | **Gate 3: construct** | ✅ v1 taxonomy hit the stop rule (D14); **Gate 3′ (Amendment 1) PASS at n=5** (D16); audit 1/200 disagreement, q_ref.lock frozen (D20; labels by Claude, reviewed by the researcher, D22) ([GATE3.md](GATE3.md)) |
+| 4 | Cluster setup and base-policy census | CPU + first GPU | Nov 30–Dec 6 | **Gate 3: construct** | ✅ v1 taxonomy hit the stop rule (D14); **Gate 3′ (Amendment 1) PASS at n=5** (D16); audit 1/200 disagreement, q_ref.lock frozen (D20; labels by Claude, reviewed by the researcher, D22) ([GATE3.md](GATE3.md)). **CLOSED with documented limitation 2026-11-07 (D28, [PHASE4_CLOSURE.md](PHASE4_CLOSURE.md))**: split-half TV is noisy at this census size (0.5B pass would fail 41 % of re-randomised splits); 1.5B failure = sampling variability, stands, no 1.5B claim; q_ref adequate for the 0.5B estimand |
 | 5 | Training stack and throughput | GPU | Dec 7–13 | **Gate 4: feasibility** | ✅ PASS 2026-11-04 ([GATE4.md](GATE4.md), D17): smoke 3667, bench 3669; standard grid ≈ 10 GPU-h |
 | 6 | Pilot | GPU | Dec 14–27 | **Gate 5: empirical engagement** | ✅ PASS 2026-11-07 (D25): LR pilot 3707, heterogeneity pilot 4020 (12/12 valid); power → R = 36, estimation-only |
 | 7 | Pre-registration and confirmatory grid | GPU | Dec 28–Jan 31 | Grid complete, manifests clean | ◐ pre-registration final, grid generated (D26); **waiting for the OSF posting** |
@@ -72,6 +72,8 @@ The working index of the project. The detailed plan is in [VERIFLOW_MASTER_PLAN.
 - ✅ taxonomy v2 census n=5..10 (3620–3625): fails (D11, D12)
 - ✅ subtraction census n=5..10 (3627–3632, D13): fails
 - ✗ Gate 3 verdict: STOP (§9.3 kill rule, D14). Continuing requires a new pre-registered design
+- ✅ Amendment 1 (D15) → Gate 3′ PASS at n = 5 (D16), audit and q_ref.lock (D20, D22)
+- ✅ Phase 4 closure (D28): split-half TV diagnosis, decision B (closed with documented limitation)
 
 **Exit (Gate 3):** construct criteria §9.3 (coverage ≥ 70 %, ≥ 3 modes at ≥ 5 % mass, ambiguity ≤ 10 %, split-half TV ≤ 0.03, manual audit). Automation ready; the census run itself decides.
 

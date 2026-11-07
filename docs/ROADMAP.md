@@ -15,8 +15,8 @@ The working index of the project. The detailed plan is in [VERIFLOW_MASTER_PLAN.
 | 3 | Construct tooling (task, taxonomy, verifier) | CPU | Nov 23–29 | Unit tests and synthetic recovery ≥ 99 % | ✅ done 2026-11-01 (D6; CARRY/DIGIT overlap flagged) |
 | 4 | Cluster setup and base-policy census | CPU + first GPU | Nov 30–Dec 6 | **Gate 3: construct** | ✅ v1 taxonomy hit the stop rule (D14); **Gate 3′ (Amendment 1) PASS at n=5** (D16); audit 1/200 disagreement, q_ref.lock frozen (D20; labels by Claude, reviewed by the researcher, D22) ([GATE3.md](GATE3.md)) |
 | 5 | Training stack and throughput | GPU | Dec 7–13 | **Gate 4: feasibility** | ✅ PASS 2026-11-04 ([GATE4.md](GATE4.md), D17): smoke 3667, bench 3669; standard grid ≈ 10 GPU-h |
-| 6 | Pilot | GPU | Dec 14–27 | **Gate 5: empirical engagement** | ◐ LR pilot done (array 3707): lr 5e-7, T 100 (D21); heterogeneity pilot and Gate 5 pending |
-| 7 | Pre-registration and confirmatory grid | GPU | Dec 28–Jan 31 | Grid complete, manifests clean | ☐ |
+| 6 | Pilot | GPU | Dec 14–27 | **Gate 5: empirical engagement** | ✅ PASS 2026-11-07 (D25): LR pilot 3707, heterogeneity pilot 4020 (12/12 valid); power → R = 36, estimation-only |
+| 7 | Pre-registration and confirmatory grid | GPU | Dec 28–Jan 31 | Grid complete, manifests clean | ◐ pre-registration final, grid generated (D26); **waiting for the OSF posting** |
 | 8 | Analysis, paper and release | CPU | Feb 1–21 | Draft + reproducibility bundle | ☐ |
 | A | Applications track (parallel) | — | continuous | Summer@EPFL by **Nov 29 2026**; others as verified | ☐ |
 

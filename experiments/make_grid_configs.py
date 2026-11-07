@@ -91,7 +91,7 @@ def main(argv=None) -> int:
         save_configs(aux, out / "aux")
     (out / "split.json").write_text(json.dumps({
         "train": sorted(c.config_id for c in train), "heldout": sorted(c.config_id for c in held),
-        "seed": SPLIT_SEED, "q_ref_lock_sha256": q["sha256"]}, indent=2) + "\n")
+        "seed": SPLIT_SEED, "q_ref_lock_sha256": q["lock_sha256"]}, indent=2) + "\n")
     rows = [{"run_name": f"grid_{c.config_id}_s{s}", "config": f"configs/grid/{arm}/{c.config_id}.json",
              "lr": sel["lr"], "seed": s, "max_steps": sel["T"]}
             for arm, cs in (("matched", matched), ("aux", aux)) for c in cs for s in SEEDS]

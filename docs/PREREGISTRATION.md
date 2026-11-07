@@ -25,7 +25,7 @@ GRPO-trained Qwen2.5-0.5B-Instruct, after controlling for the worst-mode rate f_
 | Prompt | v2 answer-only, `prompt.lock` `918a83d3…` | D9 |
 | Parser | taxonomy-v2 parser (bare integer accepted) | D11 |
 | Error modes | taxonomy v3 partition: LEN (incl. merged NEG), MULTI, ONE_HI, ONE_LO; I = unparseable | Amendment 1 (D15) |
-| q_ref | census `n5_v3_s20261104_j3640`: LEN 0.162, MULTI 0.420, ONE_HI 0.181, ONE_LO 0.206, I 0.030 | `q_ref.lock` **[after your audit]** |
+| q_ref | census `n5_v3_s20261104_j3640`: LEN 0.162, MULTI 0.420, ONE_HI 0.181, ONE_LO 0.206, I 0.030 | `q_ref.lock` sha256 `2c34f6d2…d5cb` (frozen 2026-11-05, D20, D22) |
 | Splits | seed 20261104; train 50,000 / eval 1,000 / eval-mode 1,000, disjoint | Amendment 1 |
 | Matched rates | F̄* = 0.3, τ* = 0.9 | D18 |
 | Training | TRL 1.17.1 GRPO: dapo loss, β = 0, group reward scaling, G = 8, 32 prompts/step, neutral sampling (T 1, top_p 1), full fine-tune with AdamW, constant LR, fp32 + bf16 autocast | `configs/base.json`, D17 |

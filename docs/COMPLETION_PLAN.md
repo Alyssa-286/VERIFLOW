@@ -3,6 +3,10 @@
 Written 2026-11-03, after D14. Supersedes the post-Phase-4 parts of the
 ROADMAP calendar; the master plan stays the scientific reference.
 
+> **Status 2026-11-07:** Stages 1–2 are done (D16–D20, D22). Stage 3 is in progress: LR pilot
+> complete and analysed (D21). The calendar below is the original plan and is superseded by the
+> dates in DECISIONS.md.
+
 ## Where the project stands
 
 | Done | Evidence |

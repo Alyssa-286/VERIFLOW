@@ -1,8 +1,10 @@
 # Gate 3: construct validity (Phase 4 exit)
 
-**Status (2026-11-04): Gate 3′ (Amendment 1) PASSES its automated criteria
-at n = 5. The manual audit is pending (the researcher's step), and
-`q_ref.lock` is not frozen yet.**
+**Status (2026-11-07): Gate 3′ (Amendment 1) PASSES at n = 5.** Automated
+criteria passed 2026-11-04 (D16). The 200-row audit (labels made by Claude
+from the written rules, D20; reviewed by the researcher, D22) has 1/200
+disagreement (AUD-0003, threshold 5 %), re-validated 2026-11-07. `q_ref.lock`
+was frozen 2026-11-05 (lock sha256 `2c34f6d2…d5cb`, file `737aab73…6f8f`).
 
 History: the v1/v2 mechanism taxonomy reached the §9.3 stop rule (D14; results
 below). Amendment 1 (D15, `docs/AMENDMENT_1.md`, logged before data) replaced

@@ -1,0 +1,13 @@
+run_name,config,lr,seed,max_steps
+het_pilot_het_fmaxhigh_vlow_s1,configs/pilot/het/pilot_het_fmaxhigh_vlow.json,5e-07,1,100
+het_pilot_het_fmaxhigh_vlow_s2,configs/pilot/het/pilot_het_fmaxhigh_vlow.json,5e-07,2,100
+het_pilot_het_fmaxhigh_vlow_s3,configs/pilot/het/pilot_het_fmaxhigh_vlow.json,5e-07,3,100
+het_pilot_het_v0_s1,configs/pilot/het/pilot_het_v0.json,5e-07,1,100
+het_pilot_het_v0_s2,configs/pilot/het/pilot_het_v0.json,5e-07,2,100
+het_pilot_het_v0_s3,configs/pilot/het/pilot_het_v0.json,5e-07,3,100
+het_pilot_het_vhigh_s1,configs/pilot/het/pilot_het_vhigh.json,5e-07,1,100
+het_pilot_het_vhigh_s2,configs/pilot/het/pilot_het_vhigh.json,5e-07,2,100
+het_pilot_het_vhigh_s3,configs/pilot/het/pilot_het_vhigh.json,5e-07,3,100
+het_pilot_het_vmid_s1,configs/pilot/het/pilot_het_vmid.json,5e-07,1,100
+het_pilot_het_vmid_s2,configs/pilot/het/pilot_het_vmid.json,5e-07,2,100
+het_pilot_het_vmid_s3,configs/pilot/het/pilot_het_vmid.json,5e-07,3,100

@@ -183,3 +183,33 @@ Generator seed 20261106. Pilot data are exploratory and excluded from the confir
 **Lock.** `configs/locked/q_ref.lock` was frozen on the cluster at 2026-11-05T12:22:34 by `freeze_qref()` called directly. `main()` was not used because it rewrites the audit sample and key. The sample and key hashes were the same before and after. Lock sha256 `2c34f6d2…d5cb` (file SHA-256 `737aab73…076f8f`), run `n5_v3_s20261104_j3640`, Slurm job 3640, Qwen2.5-0.5B-Instruct revision `7ae55760…a775` (the pinned revision), taxonomy-v3 lock `6b1ebdf9…8069`, prompt lock `918a83d3…92a8`, q_ref.json `f3b607c5…f196`.
 
 **Open for the researcher.** The researcher may re-do or review the audit themself before the pre-registration is posted. If a human audit changes the pass/fail outcome, the lock and every configuration generated from it are invalidated.
+
+## D21: LR pilot analysed; lr = 5e-7, T = 100, eval every 10 steps; Gate 5 rule made operational. 2026-11-07
+
+Logged before any heterogeneity-pilot run was submitted.
+
+**LR pilot (exploratory, §13).** Slurm array 3707 (tasks: 0 = job 3708 lr 5e-7, 1 = 3712 lr 1e-6, 2 = 3724 lr 3e-6, 3 = 3707 perfect verifier at lr 1e-6), commit `c934930`, preflight 3706, 800 steps each, all `status: completed`, peak VRAM ≈ 26 GB on one L40, ≈ 932 s training per run. Not rerun. `experiments/pilot_select.py` (the D19 code) was run on the cluster on these outputs and wrote `configs/pilot/selection.json` and `configs/pilot/runs_het.csv`:
+- window means of greedy accuracy over steps 400–800: 5e-7 → 0.8827, 1e-6 → 0.8692, 3e-6 → 0.7696; none diverged;
+- **lr = 5e-7** (it leads 1e-6 by 0.0135, more than the 0.005 tie band);
+- **T = 100**: the chosen run reaches 90 % of its maximum gain by step 100 (accuracy 0.408 at step 0, 0.81 at 50, 0.844 at 100, maximum 0.89), so the 100-step floor binds. The confirmatory window is [50, 100].
+
+**Observation (exploratory, not a test).** Accuracy saturates fast: most of the gain arrives within 50 steps. At lr 1e-6 the perfect verifier ends only slightly above the homogeneous noisy verifier (window mean 0.881 vs 0.869). The mode mix q(t) drifts even under the perfect verifier (ONE_HI 0.16 → 0.46 at step 800), so Gate 5 must compare configurations against the homogeneous config, not against a flat q(t).
+
+**Eval cadence: 10 steps (was 50).** With T = 100, eval every 50 puts only 2 points (50, 100) in the outcome window. For every heterogeneity-pilot run and every confirmatory run, `eval.every` = 10 (passed as `EVAL_EVERY=10` to `slurm/grpo_array.sbatch`, recorded in each manifest's `args`). That gives 6 window points and q(t) every 10 steps. Eval size (1,000 greedy + 1,000 sampled) is unchanged. This deviates from §14's "q_k(t) every 50 steps" and is fixed before the data it affects; the schedule stays identical across runs, as §14 requires. The LR pilot keeps its 50-step cadence and is not rerun.
+
+**Disclosed property of the trainer.** `training/train_grpo.py::_generate` calls `torch.manual_seed(seed)` for each eval (seed = run seed for greedy, run seed × 100003 + step for the sampled census) and does not restore the global RNG. Training rollouts after an eval therefore draw from a stream re-seeded by the eval. A run is a deterministic function of (config, seed, eval cadence). Checkpoints store the RNG after the eval, so resume stays exact. The code is not changed (Gate 4 validated it). The cadence is fixed for all compared runs, so no comparison is confounded, but results at another cadence would differ draw-by-draw.
+
+**Gate 5 rule (operational form of §27), implemented in `experiments/gate5.py` and tested in `tests/test_gate5.py`, both committed before the data:**
+- per run: G = log-growth of the config's most-accepted designed mode (argmax f, U and I excluded) in the sampled eval-mode census from step 0 to T (ε = 1e-3); F = realised acceptance rate of wrong rollouts over steps [T/2, T] from the verifier log; Y = window-mean logit accuracy;
+- contrasts with the homogeneous config v0 (3 seeds each): D = ΔG for the same mode, dF = ΔF, with SE of a difference of seed means;
+- engaged on D if |D| > 2 SE and |D| ≥ 0.10; engaged on F if |dF| > 2 SE and |dF| ≥ 0.02;
+- **Gate 5 fails iff no non-homogeneous config is engaged on D and the high-V config is not engaged on F.** On failure: one horizon extension to T' = 200 (12 new runs); if it still fails, the GPU arm stops (§27, Track B).
+- Accuracy differences are reported but do not enter the gate (a null is a result, not a kill). Three seeds are descriptive, never significance (§13).
+
+**Resources (from 2026-11-07).** VERIFLOW uses at most one L40 and 4 CPUs: arrays are submitted with `--cpus-per-task=4 --nice=1000 --array=…%1`, after checking `squeue` and node GRES. One GPU is always left for ErrorEcho.
+
+## D22: The researcher reports reviewing the 200 Gate 3′ audit labels. 2026-11-07
+
+On 2026-11-07 the researcher stated, through the conversation with Claude, that they have reviewed the 200 audit labels in `audit/gate3v3_n5_s20261104_j3640/audit_completed.csv` that Claude produced (D20). They did not report a change to any label. This is the researcher's statement as relayed in the conversation, not a signed record. The judgments in the file are still Claude's (D20).
+
+Re-validation on 2026-11-07 from the frozen files: `validate_audit()` → 200 rows, 1 disagreement (AUD-0003), rate 0.005 ≤ 0.05, pass. Hashes unchanged: `audit_sample.csv` `e76ac745…4403`, `audit_key.csv` `7cedc4a9…8eb4`, `audit_completed.csv` `6bf48840…f101`, `q_ref.lock` file `737aab73…6f8f` (lock sha256 `2c34f6d2…d5cb`). The lock stays valid. Manuscript wording: "labels produced by an AI assistant from the written rules and reviewed by the researcher".

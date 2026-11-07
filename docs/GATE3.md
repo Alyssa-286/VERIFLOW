@@ -1,6 +1,6 @@
 # Gate 3: construct validity (Phase 4 exit)
 
-**Status (2026-11-07): Gate 3′ (Amendment 1) PASSES at n = 5.** Automated
+**Status (2026-11-07): Gate 3′ (Amendment 1) passed at n = 5 by its declared procedure; Phase 4 is CLOSED WITH A DOCUMENTED LIMITATION (D28), not an unconditional pass.** Automated
 criteria passed 2026-11-04 (D16). The 200-row audit (labels made by Claude
 from the written rules, D20; reviewed by the researcher, D22) has 1/200
 disagreement (AUD-0003, threshold 5 %), re-validated 2026-11-07. `q_ref.lock`

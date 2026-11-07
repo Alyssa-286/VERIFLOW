@@ -291,3 +291,11 @@ Decision **B (closed with documented limitation)**. Full report: `docs/PHASE4_CL
 - **The 1.5B declared failure stands.** There is no 1.5B q_ref and no confirmatory 1.5B claim (unchanged from `prereg-v1`). No 1.5B census is rerun. A future 1.5B arm would need a new amendment with a criterion that does not depend on a single split (PHASE4_CLOSURE §6).
 - **The locked q_ref is adequate for the registered 0.5B estimand.** The independent-split replicate 3620 (re-classified under v3) has TV 0.012 against the lock. The cluster-bootstrap SD is ≤ 0.010 per mode. Across the 48 D26 configs, F̄ is within ±0.02 of 0.3 (95th percentile of the worst config), and V moves by ≤ 4.7 % of its range, with matched-arm V ranks preserved (Spearman ≥ 0.989 in every draw).
 - **Reporting.** The Gate 3′ TV pass must be reported with its 0.41 re-randomisation failure probability, not as strong evidence of stability. `PREREGISTRATION.md` stays frozen at `prereg-v1`. A disclosure paragraph for the OSF form, or an addendum, is in PHASE4_CLOSURE §7; adding it is the researcher's step.
+
+## D29: D28 independently verified; post-freeze addendum written. 2026-11-07
+
+The Phase 4 closure (D28, commit `75a819d`, made by another session in this checkout on top of `5271f91`, with a linear history) was checked by re-running `experiments/diagnose_split_half_tv.py` on the cluster against the original census directories (3640–3645, 3647–3652, replicate 3620, `configs/grid`). Output: `~/VERIFLOW/.tmp/tv_diag_recheck.json`, not committed; the committed JSON stays the record.
+- Deterministic results are identical: the declared TVs, and recomputed = stored in 12/12 runs.
+- Monte Carlo results agree within noise, the run order differing (replicate TV 0.0124 vs 0.0124; P(TV > 0.03) for 3640 0.41 vs 0.41; F̄ p95 deviation 0.020 vs 0.020; matched V Spearman minimum 0.990 vs 0.989).
+- D28 is supported. Phase 4 is recorded as **closed with a documented limitation**, not as an unconditional pass (GATE3.md status line adjusted).
+- The disclosure is filed as `docs/PREREG_ADDENDUM_1.md`, a separate dated document attached to the OSF registration. `prereg-v1` is unchanged.

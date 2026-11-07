@@ -271,3 +271,13 @@ Generated once on the cluster by `experiments/make_grid_configs.py --R 36` at co
 Checks:
 - A Windows re-generation gives identical ids, split and run table. Acceptance probabilities agree to ≤ 2.8e-16 and `target_V` metadata to ≤ 4.2e-17 (platform floating point). The cluster files are authoritative, and the validator compares each run's manifest against the canonical config sha256.
 - Two earlier cluster attempts were discarded without use: one crashed (KeyError, `6ba5fb1`); one at `c978599` used an `aux/` directory. Its 48 config files are byte-identical to these.
+
+## D27: Grid analysis driver written and tested before any grid data. 2026-11-07
+
+`experiments/analyse_grid.py`, tested end-to-end on synthetic run directories built over the real `configs/grid` (`tests/test_analyse_grid.py`: recovers a planted b_V < 0 with a CI excluding 0; reports a missing run rather than dropping it). It calls the registered `vf_stats/confirmatory.py` functions unchanged (H1 HC3, H2/H3 paired bootstrap with 10,000 resamples, LOCO, Holm, ICC) and adds:
+- the HC3 95 % CI for b_V (the D25 estimation framing);
+- the registered secondary outcomes (hacking threshold 0.029);
+- all-predictor LOCO and Spearman ρ across both arms, labelled exploratory. Without statsmodels, the random-intercept model is computed as OLS on config means, which gives identical fixed effects for 2 seeds per config;
+- three robustness re-fits of H1, labelled exploratory: configs with two valid seeds only, without the homogeneous control, and on final accuracy.
+
+The pre-registration was frozen before this driver existed, as tag `prereg-v1` (`8ff68a3`). The driver adds no inferential choice beyond what the registration states.

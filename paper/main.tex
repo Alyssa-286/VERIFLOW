@@ -1,0 +1,134 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,booktabs,graphicx,xcolor}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\input{generated/numbers.tex}
+\newcommand{\Fbar}{\overline{F}}
+\newcommand{\fmax}{f_{\max}}
+\newcommand{\qref}{q^{\mathrm{ref}}}
+
+\title{Same Error Rate, Different Fate?\\[2pt]
+\large Error-Mode Structure of Verifier False Positives in RLVR:\\ a Pre-registered Matched-Rate Study}
+\author{Alyssa L}
+\date{Pre-registration: \url{https://osf.io/bs3wq/} \quad Code: \texttt{github.com/Alyssa-286/VERIFLOW}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Reinforcement learning with verifiable rewards (RLVR) is usually analysed through a verifier's aggregate error rates.
+Recent work shows that the \emph{pattern} of false positives, not only their rate, can decide whether training improves, plateaus or collapses.
+We ask a narrower, quantitative question: among programmatic verifiers matched \emph{exactly} on the base-weighted aggregate false-acceptance rate $\Fbar$ and the true-positive rate $\tau$, does the dispersion $V$ of the per-error-mode false-acceptance probabilities predict the held-out accuracy reached by GRPO, beyond the worst-mode rate $\fmax$?
+Replicator theory predicts that $V$ is the leading-order term at short horizon and that $\fmax$ dominates at long horizon.
+We test this in one small, fully controlled setting: Qwen2.5-0.5B-Instruct on five-digit addition, with wrong answers partitioned into four outcome-defined modes and a verifier that accepts each mode at a designed rate.
+A pilot confirmed that a high-$V$ verifier differentially amplifies its most-accepted mode within the pre-registered horizon of \HorizonT{} steps.
+Because the pre-registered power analysis gave at most \PowC{} power, the confirmatory grid (48 configurations $\times$ 2 seeds) was registered as an \emph{estimation} study.
+\input{generated/abstract_result.tex}
+All decisions, including a construct-validation stop, a census stability limitation and the downgrade to estimation, were logged before the data they govern.
+\end{abstract}
+
+\section{Introduction}
+RLVR fine-tunes a language model on rewards from a programmatic checker: unit tests, an answer parser, a rule-based or model-based judge \citep{shao2024deepseekmath,yu2025dapo}.
+Checkers make mistakes. A large literature models those mistakes as class-conditional noise characterised by a false-positive rate and a false-negative rate, or by Youden's index $J=\tau-\Fbar$ \citep{rad2026rate,cai2025reinforcement,mansouri2025noisecorrected}.
+Under that block-symmetric view, all wrong answers are accepted with the same probability, and the drift of the incorrect mass depends on $J$ alone \citep{rad2026rate}.
+
+Real checkers are not symmetric across wrong answers. They accept some \emph{kinds} of wrong answers far more often than others \citep{huang2025from,xin2026where,ray2026before}, and systematic false positives can produce plateaus or collapse that the overall error rate does not predict \citep{egashira2026delay}; a recent survey concludes that the structure of an error matters more than its rate \citep{gupta2026checking}.
+What is missing is a \emph{quantitative} account: which summary of the per-mode acceptance profile predicts outcomes, at which horizon, once the aggregate rates are held fixed.
+
+This paper isolates one such summary. For error modes $k$ with base-policy frequencies $\qref_k$ and verifier acceptance probabilities $f_k$, the aggregate rate is $\Fbar=\sum_k \qref_k f_k$ and the dispersion is $V=\sum_k \qref_k (f_k-\Fbar)^2$.
+In the idealised replicator model, two verifiers with equal $\tau$ and $\Fbar$ differ in logit accuracy by $-\Delta V\,t^2/2$ to leading order (Section~\ref{sec:theory}), while at long horizon the most-accepted mode and $\fmax$ take over.
+Whether this survives finite groups, shared parameters and Adam in a real transformer is an empirical question with no guaranteed sign.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+\item An exactly matched experimental design that varies $V$ and $\fmax$ while holding $\Fbar$ and $\tau$ fixed under the base-policy error distribution, with theory that reduces to the $J$-dynamics of \citet{rad2026rate} when $V=0$.
+\item A pre-registered estimate, with confidence intervals, of the $V$--outcome association and of held-out-configuration prediction in one controlled RLVR setting (Qwen2.5-0.5B-Instruct, five-digit addition).
+\item A transparent record of what did not work: a mechanism-based error taxonomy that reached its stop rule, a census stability criterion that proved noisy at the census size used, and a confirmatory test downgraded to estimation for lack of power.
+\end{enumerate}
+We do \emph{not} claim that structure matters more than rate (that is established), nor anything about larger models, other tasks or natural verifiers.
+
+\section{Related work}\label{sec:related}
+\textbf{Noisy verifiers in RLVR.}
+\citet{rad2026rate} derive replicator dynamics for GRPO under false positives and negatives and show a phase transition at $J=0$; their error model is symmetric across incorrect modes, so $V=0$ by construction.
+\citet{cai2025reinforcement} and \citet{mansouri2025noisecorrected} study asymmetric but mode-independent noise and propose corrections.
+\citet{plesner2026an} find RLVR on MBPP tolerant of resampled noise up to 20--30\%, and compare four \emph{correlation} structures (cell, row, column and whole-group flips) at equal rates; they do not vary acceptance by error mode.
+\citet{moya2026verifier} analyse reward hacking under a fixed verifier and propose audit-based correction.
+
+\textbf{Systematic false positives.}
+\citet{egashira2026delay} show on arithmetic that systematic false positives cause outcomes ranging from delay to collapse that are not determined by the overall error rate. This is the closest work; it varies discrete false-positive patterns rather than a continuous dispersion statistic at exactly matched $\Fbar$ and $\tau$, and does not evaluate prediction on held-out configurations.
+\citet{zhang2026when} contrast natural false positives in MBPP with hardened tests in a pre-registered design and find mechanism evidence consistent with selection of pre-existing error modes, the mechanism our model formalises.
+Exploitable loopholes and reward hacking are studied by \citet{helff2026llms} and the CATCH testbed \citep{wang2026catch}; verifier audits that decompose errors by category include \citet{xin2026where}, \citet{ray2026before} and \citet{huang2025from}. Correlated errors within groups and across models \citep{xin2026are,kim2025correlated} motivate our per-sample pseudorandom verifier.
+
+\textbf{Caveats from RLVR practice.} Qwen models can improve under spurious rewards \citep{shao2025spurious}, and fast reward saturation separates generalisation from memorisation \citep{rahman2026when}; both bear on our small, fast-saturating setting. We pin GRPO's loss and advantage scaling because of the biases documented by \citet{liu2025understanding}.
+
+\section{Theory}\label{sec:theory}
+Let the policy put probability $p_{\mathsf C}=A$ on correct answers and $p_k$ on incorrect class $k$, with $q_k=p_k/(1-A)$.
+The verifier accepts a correct answer with probability $\tau$ and an answer of class $k$ with probability $f_k$.
+Under the idealised assumptions (free categorical policy, natural-gradient replicator update with a common positive time change, exact expected rewards, no KL term, fixed classes), standard replicator results \citep{hofbauer1998evolutionary} give:
+
+\begin{proposition}[closure and exact accuracy law]
+$q_k(t)\propto q_k(0)e^{f_k t}$, independent of $\tau$ and $A(0)$, and
+$\operatorname{logit}A(t)=\operatorname{logit}A(0)+\tau t-K_0(t)$ with $K_0(s)=\log\sum_k q_k(0)e^{s f_k}$.
+\end{proposition}
+\begin{proposition}[Fisher--Price]
+$\frac{d}{dt}\sum_k q_k(t) f_k=\operatorname{Var}_{q(t)}(f)$; at $t=0$ the effective false-acceptance rate rises at rate exactly $V$.
+\end{proposition}
+\begin{corollary}[matched-rate contrast]
+For verifiers with equal $\tau$ and equal $\Fbar$ under $\qref=q(0)$,
+$\operatorname{logit}A_B(t)-\operatorname{logit}A_A(t)=-(V_B-V_A)\,t^2/2-(\kappa_{3,B}-\kappa_{3,A})\,t^3/6-\cdots$.
+\end{corollary}
+\begin{proposition}[long horizon]
+As $t\to\infty$, $K_0(t)=\fmax t+\log q_{\arg\max f}(0)+o(1)$: if $\fmax>\tau$ accuracy collapses onto the most-accepted mode; otherwise $A\to1$ with a logit delay of $-\log q_{\arg\max f}(0)$.
+\end{proposition}
+Thus $V$ is the leading-order discriminator at short horizon and $\fmax$ at long horizon; the cumulant-generating-function (CGF) plug-in $Z(s)=\tau s-K(s)$ interpolates. Under vanilla softmax gradients the relevant statistic becomes a $q^2$-weighted covariance that can have the opposite sign (Proposition~7 of the Gate~1 report in the repository), so the theory does \emph{not} fix the sign of the $V$ effect for a transformer trained with Adam. These are standard results applied to verifier error, not new mathematics. All were checked numerically (21 tests; maximum error $\le10^{-10}$).
+
+\textbf{Simulation (Gate 2).} In finite-group GRPO with stochastic verifiers, shared parameters and Adam (9 settings, 6 families, 3 horizons), adding $V$ to $\fmax$ reduced leave-one-configuration-out error in all 27 setting$\times$horizon cells (by 9--69\% of outcome variance), the coefficient of $V$ was negative in every family, and the CGF predictor gained value at longer horizons. Simulated classes are atomic actions, so this supports running the experiment; it is not evidence about language models.
+
+\section{Experimental design}\label{sec:design}
+\subsection{Task, error modes and the reference distribution}
+The base model is Qwen2.5-0.5B-Instruct \citep{qwen2024qwen} at a pinned revision, asked to add two five-digit integers with an answer-only prompt.
+Wrong answers are partitioned by how they differ from the true sum $S$: \textsf{LEN} (wrong digit count, including negatives), \textsf{ONE\_HI}/\textsf{ONE\_LO} (exactly one wrong digit in the high/low half), \textsf{MULTI} (two or more wrong digits), and \textsf{I} (unparseable).
+This outcome-based partition (Amendment~1) replaced a pre-registered \emph{mechanism} taxonomy (dropped carry, transposition, \ldots) after that taxonomy reached its stop rule: 55--97\% of wrong answers matched no named mechanism across 24 censuses. The amendment and its timing are disclosed; its confirmatory census used operands never generated before.
+
+The reference distribution $\qref$ was estimated from a census of 2{,}000 fresh prompts $\times$ 4 samples (base accuracy 0.349): \textsf{LEN} 0.162, \textsf{MULTI} 0.420, \textsf{ONE\_HI} 0.181, \textsf{ONE\_LO} 0.206, \textsf{I} 0.030.
+A blinded 200-row audit of the classifier was labelled by an AI assistant from the written rules and reviewed by the author; it disagreed with the classifier on 1 row.
+
+\textbf{Census stability limitation.} The pre-registered split-half total-variation criterion (TV $\le0.03$) was passed by the selected census (TV \TVdeclared), but a post hoc diagnosis showed the criterion is noisy at this census size: under random prompt halves the same census would exceed 0.03 with probability \TVpfail, because errors cluster strongly within prompts. The lock is supported instead by an independent-split replicate (TV \TVreplicate{} against the lock) and by bootstrap propagation: across the 48 registered configurations $\Fbar$ stays within $\pm$\FbarDev{} of 0.3 and the rank order of $V$ is preserved (Spearman $\ge$\VrankMin). A secondary 1.5B model failed the same criterion; no claim is made about it.
+
+\subsection{Verifiers}
+A verifier is a vector $(\tau,f_{\textsf{LEN}},f_{\textsf{MULTI}},f_{\textsf{ONE\_HI}},f_{\textsf{ONE\_LO}})$ with $f_{\textsf I}=0$; each decision is a Bernoulli draw from a SHA-256 pseudorandom function keyed on (verifier seed, run seed, step, prompt, sample), and every decision is logged.
+\emph{Matched} configurations satisfy $\tau=0.9$ and $\Fbar=0.3$ exactly under $\qref$ (to $10^{-12}$); $V$ and $\fmax$ vary over a grid of $V$ fractions $\{0,.25,.5,.75,1\}$ of the feasible range $\times$ $\fmax\in\{\text{free},0.6,0.95\}$, with the mode carrying $\fmax$ randomised. \emph{Auxiliary} configurations use $\Fbar\in\{0.15,0.45\}$.
+
+\subsection{Training and outcome}
+GRPO with the DAPO loss \citep{yu2025dapo}, no KL term, group reward scaling, $G=8$ samples for each of 32 prompts per step, neutral sampling, full fine-tuning with AdamW at a constant learning rate, implemented in TRL 1.17.1. The learning rate (\LR) and horizon ($T=\HorizonT$ steps) were set by pre-declared rules on a learning-rate pilot.
+The primary outcome of a run is $Y=\operatorname{logit}$ of the mean greedy accuracy on 1{,}000 held-out prompts over the evaluations in $[T/2,T]$ (every 10 steps, six points). The configuration outcome $\bar Y$ is the mean over two seeds.
+
+\subsection{Pilot, power and the registered claim}
+A heterogeneity pilot (4 configurations $\times$ 3 seeds, \PilotValid{} runs valid) was evaluated with a pre-declared engagement rule (Gate~5). The high-$V$ verifier amplified its most-accepted mode beyond the homogeneous control (log-growth difference \GfiveD, SE \GfiveDse) and raised the realised acceptance of wrong rollouts (\GfiveF, SE \GfiveFse), so the manipulation reaches the policy within $T$ (Figure~\ref{fig:pilot}).
+The pre-registered power simulation used the pilot's seed SD (\SigmaS{} logit) and an effect size transferred from the simulation (median share $\rho=\RhoMed$ of the homogeneous logit gain). Power for the $V$ coefficient at the Holm-adjusted level $\alpha=0.05/3$ was \PowA, \PowB{} and \PowC{} for 12, 24 and 36 matched configurations (pessimistic effect: \PowPessA, \PowPessB, \PowPessC).
+Following the rule fixed in advance, the study uses the largest design (36 matched + 12 auxiliary configurations, 96 runs) and reports \emph{estimates with confidence intervals}; $p$-values are reported but not interpreted as confirmatory.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figures/out/fig_pilot_het.pdf}
+\caption{Heterogeneity pilot (exploratory; 4 configurations $\times$ 3 seeds). Left: greedy held-out accuracy. Right: share of \textsf{ONE\_HI}, the high-$V$ verifier's most-accepted mode, among wrong answers. Shaded: outcome window. One high-$V$ seed collapses inside the window before recovering.}
+\label{fig:pilot}
+\end{figure}
+
+\subsection{Pre-registered analysis}
+H1: in the matched arm, $\bar Y_r=b_0+b_V V_r+b_f f_{\max,r}+\varepsilon_r$ with HC3 standard errors.
+H2: on 13 held-out configurations, compare the squared prediction error of $\{\fmax,V\}$ against $\{\fmax\}$, both fitted on the 23 training configurations, with a 10{,}000-resample configuration-level bootstrap.
+H3: the same comparison for the CGF plug-in $Z(s)$ ($s$ chosen by cross-validation) against $\{\fmax,V\}$.
+Holm adjustment over H1--H3; ICC between configuration and seed; exploratory comparison of every registered predictor across both arms.
+The registration (\url{https://osf.io/bs3wq/}) was recorded before the first confirmatory run started.
+
+\input{sections/results.tex}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{document}

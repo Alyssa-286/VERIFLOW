@@ -1,0 +1,18 @@
+{
+  "trainer": {
+    "do_sample": true,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 0,
+    "min_p": null,
+    "repetition_penalty": 1.0,
+    "max_new_tokens": 256
+  },
+  "model_defaults_after_neutralize": {
+    "do_sample": true,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 0,
+    "repetition_penalty": 1.0
+  }
+}

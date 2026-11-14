@@ -1,0 +1,183 @@
+{
+  "experiment_id": "veriflow-grpo-v1",
+  "run_kind": "grid",
+  "run_id": "grid_m018_s1",
+  "args": {
+    "run_dir": "runs/grid/grid_m018_s1",
+    "base": "<REPO>/configs/base.json",
+    "verifier_config": "configs/grid/matched/m018.json",
+    "provisional_census": null,
+    "run_kind": "grid",
+    "lr": 5e-07,
+    "max_steps": 100,
+    "seed": 1,
+    "num_generations": null,
+    "prompts_per_step": null,
+    "eval_every": 10,
+    "eval_size": 1000,
+    "eval_mode_size": 1000,
+    "save_every": null,
+    "resume": "auto"
+  },
+  "base": {
+    "_comment": "Phase 5 training settings (master plan \u00a716.5; D17). Every value that matters to the theory is pinned here, never left to a library default. lr and max_steps are set per run by the pilot rule (\u00a713).",
+    "model": "qwen0p5b",
+    "task": "add",
+    "scheme": "add_v3",
+    "n_digits": 5,
+    "split_seed": 20261104,
+    "max_completion_length": 256,
+    "grpo": {
+      "loss_type": "dapo",
+      "beta": 0.0,
+      "scale_rewards": "group",
+      "num_iterations": 1,
+      "num_generations": 8,
+      "temperature": 1.0,
+      "top_p": 1.0,
+      "top_k": 0,
+      "min_p": null,
+      "repetition_penalty": 1.0,
+      "epsilon": 0.2,
+      "mask_truncated_completions": false,
+      "use_vllm": false,
+      "disable_dropout": true,
+      "shuffle_dataset": true,
+      "log_completions": false
+    },
+    "batch": {
+      "prompts_per_step": 32,
+      "per_device_train_batch_size": 64
+    },
+    "optim": {
+      "optim": "adamw_torch",
+      "lr_scheduler_type": "constant",
+      "warmup_steps": 0,
+      "weight_decay": 0.0,
+      "adam_beta1": 0.9,
+      "adam_beta2": 0.999,
+      "adam_epsilon": 1e-08,
+      "max_grad_norm": 1.0,
+      "bf16": true,
+      "gradient_checkpointing": false
+    },
+    "eval": {
+      "every": 50,
+      "eval_size": 1000,
+      "eval_mode_size": 1000,
+      "batch_size": 250
+    },
+    "save_every": 50,
+    "save_total_limit": 2,
+    "verifier": {
+      "_comment": "Fbar* = 0.3 and tau* = 0.9 fixed by the researcher before the pilot (D18): the Gate 2 simulation values, so its evidence transfers.",
+      "Fbar": 0.3,
+      "tau": 0.9,
+      "verifier_seed": 20261105
+    }
+  },
+  "G": 8,
+  "prompts_per_step": 32,
+  "verifier_config": {
+    "config_id": "m018",
+    "f": {
+      "I": "0.0",
+      "LEN": "0.06537306002931487",
+      "MULTI": "0.32360320388734093",
+      "ONE_HI": "0.16333719820340437",
+      "ONE_LO": "0.6",
+      "U": "0.3"
+    },
+    "generator_seed": 20261108,
+    "grid_cell": "fmax=0.6|Vfrac=0.25",
+    "q_ref": {
+      "I": "0.030128574170024947",
+      "LEN": "0.16234887737478412",
+      "MULTI": "0.42007292266359625",
+      "ONE_HI": "0.18096334676645556",
+      "ONE_LO": "0.20648627902513914"
+    },
+    "target_Fbar": 0.3,
+    "target_V": 0.03384643952758125,
+    "target_fmax": 0.6,
+    "tau": 0.9
+  },
+  "verifier_config_sha256": "6ce702d7b0514c58493e15f157f26ec2ad5e870cf81fc9551eba3d4b8b077eb4",
+  "verifier_config_meta": {
+    "source": "configs/grid/matched/m018.json",
+    "provisional": false
+  },
+  "predictors": {
+    "FPR": 0.3,
+    "macroFPR": 0.23046269242401202,
+    "TPR": 0.9,
+    "J": 0.6000000000000001,
+    "J_worst": 0.30000000000000004,
+    "fmax": 0.6,
+    "trigger": 0.20648627902513914,
+    "V": 0.03384643952758125,
+    "V_unw": 0.04602128957281253,
+    "V_q2": 0.006079873431229572,
+    "kappa3": 0.002208363507834836,
+    "IQR": 0.16026600568393656,
+    "H_accept": 1.0704594735511415,
+    "max_qf": 0.13593694364025893
+  },
+  "model": {
+    "name": "qwen0p5b",
+    "repo": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "tokenizer_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "dtype": "float32"
+  },
+  "git": {
+    "commit": "540206cae0daf19dc86a5625b3b30635f9d3f7c5",
+    "dirty": false,
+    "branch": "phase4/hpc-ready"
+  },
+  "env": {
+    "python": "3.12.3",
+    "platform": "Linux-6.8.0-139-generic-x86_64-with-glibc2.39",
+    "hostname": "<cluster-node>",
+    "packages": {
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "pandas": "3.1.0",
+      "pyarrow": "26.0.0",
+      "matplotlib": "3.11.2",
+      "torch": "2.8.0",
+      "transformers": "4.57.6",
+      "accelerate": "1.15.0",
+      "trl": "1.17.1",
+      "peft": null,
+      "vllm": null,
+      "datasets": "5.0.1"
+    },
+    "cuda_runtime": "12.8",
+    "driver": null,
+    "gpu": "NVIDIA L40",
+    "gpu_count": 1
+  },
+  "prompt_lock_sha256": "918a83d3305f03d98ae58ed1d28f842833e24ae8623c6b1d215834aed3e492a8",
+  "taxonomy_lock_sha256": "f4bf0f241f8b03257c9be742b3fe257d18d0b3a61e765d2165fdcc4321eb575d",
+  "q_ref_lock_sha256": "2c34f6d23b7c81cfe0ef6ef7eb3b5207b1b42adb05779760a812ad7cd8bdd5cb",
+  "prompt_sub_lock_sha256": "99b4bc16e765bcd494ce719c483d6b12c8abc333d2a21d3e18d506b6b48e0b8e",
+  "taxonomy_sub_lock_sha256": "a02392c243e55cf8b55b705675786b411261ada09568c920c98933f355e52a16",
+  "taxonomy_v3_lock_sha256": "6b1ebdf9dd31f17cd8d93ae39f50c2ae0a53c11f0a466bb374fa3fd7d1978069",
+  "slurm": {
+    "job_id": "4067",
+    "job_name": "veriflow-grid",
+    "array_job_id": "4036",
+    "array_task_id": "30"
+  },
+  "resumed_from": null,
+  "status": "completed",
+  "time": {
+    "start": "2026-11-07T06:47:34",
+    "end": "2026-11-07T06:50:21",
+    "wall_seconds": 168.7
+  },
+  "final_step": 100,
+  "peak_vram_mib": 41865.9,
+  "device": "NVIDIA L40"
+}

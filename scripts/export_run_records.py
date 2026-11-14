@@ -22,7 +22,16 @@ from pathlib import Path
 
 FILES = ("manifest.json", "eval.jsonl", "metrics.jsonl", "generation_config.json")
 HOME = re.compile(r"/home/[^/\"]+/VERIFLOW")
-PRIVATE = re.compile(r"/home/[^/\"]+|<cluster-user>\d+|192\.168\.\d+\.\d+|sit-gpu|<login-host>")
+PRIVATE = re.compile(r"/home/[^/\"]+|\b192\.168\.\d+\.\d+\b|\b10\.\d+\.\d+\.\d+\b")  # + each run's own hostname
+
+
+def hostnames(o) -> set:
+    if isinstance(o, dict):
+        return {v for k, v in o.items() if k == "hostname" and isinstance(v, str)} | set().union(
+            *(hostnames(v) for v in o.values()))
+    if isinstance(o, list):
+        return set().union(*(hostnames(v) for v in o)) if o else set()
+    return set()
 
 
 def sha(b: bytes) -> str:
@@ -59,10 +68,12 @@ def main(argv=None) -> int:
     runs = sorted(p for p in src.iterdir() if (p / "manifest.json").exists())
     for rd in runs:
         (dst / rd.name).mkdir(parents=True, exist_ok=True)
+        hosts = hostnames(json.loads((rd / "manifest.json").read_bytes()))
         for f in FILES:
             raw = (rd / f).read_bytes()
             out = redact_manifest(raw) if f == "manifest.json" else raw
-            if PRIVATE.search(out.decode("utf-8", "replace")):
+            text = out.decode("utf-8", "replace")
+            if PRIVATE.search(text) or any(h in text for h in hosts):
                 raise SystemExit(f"private string left in {rd.name}/{f}")
             (dst / rd.name / f).write_bytes(out)
             index[f"{rd.name}/{f}"] = {"original_sha256": sha(raw), "exported_sha256": sha(out)}

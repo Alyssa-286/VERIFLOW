@@ -15,6 +15,7 @@ Each figure is written as pdf + png, with a .sources.json listing input files an
 from __future__ import annotations
 
 import hashlib
+import os
 import json
 from pathlib import Path
 
@@ -27,6 +28,8 @@ import pandas as pd  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "figures" / "out"
+RUNS = Path(os.environ.get("VERIFLOW_GRID_RUNS", "runs/grid"))  # or results/grid/run_records
+RUNS = RUNS if RUNS.is_absolute() else ROOT / RUNS
 
 
 def sha(p: Path) -> str:
@@ -112,7 +115,7 @@ def main() -> int:
         fd = row["f_dict"].iloc[0]
         designed = {k: float(v) for k, v in fd.items() if k not in ("U", "I")}
         mode = max(sorted(designed), key=lambda k: designed[k])
-        p = ROOT / "runs/grid" / r.run / "eval.jsonl"
+        p = RUNS / r.run / "eval.jsonl"
         srcs.append(p)
         ev = [json.loads(l) for l in p.read_text().splitlines() if l]
         key = "homogeneous control" if r.config_id == "m000" else str(row["tert"].iloc[0])

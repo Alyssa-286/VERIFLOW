@@ -10,8 +10,11 @@ ROADMAP calendar; the master plan stays the scientific reference.
 > **Stage 1 closed 2026-11-07 (D28): closed with a documented limitation.** The
 > split-half TV diagnosis ([PHASE4_CLOSURE.md](PHASE4_CLOSURE.md)) finds no defect.
 > The criterion is noisy at the census size used, the 1.5B failure stands (no 1.5B
-> arm), and the locked q_ref is adequate for the 0.5B estimand. Remaining action
-> (researcher): add the PHASE4_CLOSURE §7 disclosure to the OSF form before posting.
+> arm), and the locked q_ref is adequate for the 0.5B estimand. The §7 disclosure was
+> filed as Addendum 1 in the OSF registration (D29, D31).
+>
+> **Status 2026-11-14:** all stages complete. Grid 96/96 valid (D32); registered analysis,
+> supplement and duplicate-configuration disclosure (D33); paper and release (D34).
 
 ## Where the project stands
 

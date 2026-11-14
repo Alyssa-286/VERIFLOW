@@ -18,7 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from figures.make_grid_figs import ROOT, save  # noqa: E402
+from figures.make_grid_figs import ROOT, RUNS, save  # noqa: E402
 
 
 def main() -> int:
@@ -41,7 +41,7 @@ def main() -> int:
     srcs = [rr_path, sup_path]
     hom = []
     for s in (1, 2):
-        p = ROOT / f"runs/grid/grid_m000_s{s}/eval.jsonl"
+        p = RUNS / f"grid_m000_s{s}" / "eval.jsonl"
         srcs.append(p)
         hom.append(pd.Series({e["step"]: e["greedy_accuracy"] for e in map(json.loads, p.read_text().splitlines())}))
     h = pd.concat(hom, axis=1).mean(axis=1)

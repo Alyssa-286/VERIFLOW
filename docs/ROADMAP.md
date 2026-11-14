@@ -16,8 +16,8 @@ The working index of the project. The detailed plan is in [VERIFLOW_MASTER_PLAN.
 | 4 | Cluster setup and base-policy census | CPU + first GPU | Nov 30–Dec 6 | **Gate 3: construct** | ✅ v1 taxonomy hit the stop rule (D14); **Gate 3′ (Amendment 1) PASS at n=5** (D16); audit 1/200 disagreement, q_ref.lock frozen (D20; labels by Claude, reviewed by the researcher, D22) ([GATE3.md](GATE3.md)). **CLOSED with documented limitation 2026-11-07 (D28, [PHASE4_CLOSURE.md](PHASE4_CLOSURE.md))**: split-half TV is noisy at this census size (0.5B pass would fail 41 % of re-randomised splits); 1.5B failure = sampling variability, stands, no 1.5B claim; q_ref adequate for the 0.5B estimand |
 | 5 | Training stack and throughput | GPU | Dec 7–13 | **Gate 4: feasibility** | ✅ PASS 2026-11-04 ([GATE4.md](GATE4.md), D17): smoke 3667, bench 3669; standard grid ≈ 10 GPU-h |
 | 6 | Pilot | GPU | Dec 14–27 | **Gate 5: empirical engagement** | ✅ PASS 2026-11-07 (D25): LR pilot 3707, heterogeneity pilot 4020 (12/12 valid); power → R = 36, estimation-only |
-| 7 | Pre-registration and confirmatory grid | GPU | Dec 28–Jan 31 | Grid complete, manifests clean | ◐ pre-registration final, grid generated (D26); **waiting for the OSF posting** |
-| 8 | Analysis, paper and release | CPU | Feb 1–21 | Draft + reproducibility bundle | ☐ |
+| 7 | Pre-registration and confirmatory grid | GPU | Dec 28–Jan 31 | Grid complete, manifests clean | ✅ done 2026-11-14 (D31, D32): OSF bs3wq public, DOI 10.17605/OSF.IO/BS3WQ, 24/24 hash commitments verified; array 4036 96/96 valid |
+| 8 | Analysis, paper and release | CPU | Feb 1–21 | Draft + reproducibility bundle | ✅ done 2026-11-14 (D33, D34): registered analysis + labelled supplement, paper, reproducibility bundle, public release |
 | A | Applications track (parallel) | — | continuous | Summer@EPFL by **Nov 29 2026**; others as verified | ☐ |
 
 ---

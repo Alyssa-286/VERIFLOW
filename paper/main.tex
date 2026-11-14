@@ -12,10 +12,10 @@
 \newcommand{\fmax}{f_{\max}}
 \newcommand{\qref}{q^{\mathrm{ref}}}
 
-\title{Same Error Rate, Different Fate?\\[2pt]
-\large Error-Mode Structure of Verifier False Positives in RLVR:\\ a Pre-registered Matched-Rate Study}
+\title{Beyond Aggregate Verifier Quality:\\ Does Error-Mode Heterogeneity Predict RLVR Failure?\\[4pt]
+\large A Pre-registered Matched-Rate Study}
 \author{Alyssa L}
-\date{Pre-registration: \url{https://osf.io/bs3wq/} \quad Code: \texttt{github.com/Alyssa-286/VERIFLOW}}
+\date{Pre-registration: \url{https://osf.io/bs3wq/} (DOI 10.17605/OSF.IO/BS3WQ)\\ Code and data: \url{https://github.com/Alyssa-286/VERIFLOW}}
 
 \begin{document}
 \maketitle
@@ -29,7 +29,7 @@ We test this in one small, fully controlled setting: Qwen2.5-0.5B-Instruct on fi
 A pilot confirmed that a high-$V$ verifier differentially amplifies its most-accepted mode within the pre-registered horizon of \HorizonT{} steps.
 Because the pre-registered power analysis gave at most \PowC{} power, the confirmatory grid (48 configurations $\times$ 2 seeds) was registered as an \emph{estimation} study.
 \input{generated/abstract_result.tex}
-All decisions, including a construct-validation stop, a census stability limitation and the downgrade to estimation, were logged before the data they govern.
+All decisions, including a construct-validation stop, a census stability limitation and the downgrade to estimation, were logged before the data they govern; analyses added after the data are labelled as such.
 \end{abstract}
 
 \section{Introduction}
@@ -48,7 +48,8 @@ Whether this survives finite groups, shared parameters and Adam in a real transf
 \begin{enumerate}
 \item An exactly matched experimental design that varies $V$ and $\fmax$ while holding $\Fbar$ and $\tau$ fixed under the base-policy error distribution, with theory that reduces to the $J$-dynamics of \citet{rad2026rate} when $V=0$.
 \item A pre-registered estimate, with confidence intervals, of the $V$--outcome association and of held-out-configuration prediction in one controlled RLVR setting (Qwen2.5-0.5B-Instruct, five-digit addition).
-\item A transparent record of what did not work: a mechanism-based error taxonomy that reached its stop rule, a census stability criterion that proved noisy at the census size used, and a confirmatory test downgraded to estimation for lack of power.
+\item An empirical answer for this setting: at matched aggregate rates, dispersion is associated with lower accuracy ($b_V=\HoneBV$, 95\% CI \HoneLo{} to \HoneHi), predicts outcomes better than the aggregate or worst-mode rate, and coincides with drift toward the most-accepted error mode and occasional reward hacking (Sections~\ref{sec:results}--\ref{sec:robust}).
+\item A transparent record of what did not work: a mechanism-based error taxonomy that reached its stop rule, a census stability criterion that proved noisy at the census size used, a confirmatory test downgraded to estimation for lack of power, and duplicated configurations in the registered grid that weaken the held-out test.
 \end{enumerate}
 We do \emph{not} claim that structure matters more than rate (that is established), nor anything about larger models, other tasks or natural verifiers.
 
@@ -90,7 +91,7 @@ Thus $V$ is the leading-order discriminator at short horizon and $\fmax$ at long
 \textbf{Simulation (Gate 2).} In finite-group GRPO with stochastic verifiers, shared parameters and Adam (9 settings, 6 families, 3 horizons), adding $V$ to $\fmax$ reduced leave-one-configuration-out error in all 27 setting$\times$horizon cells (by 9--69\% of outcome variance), the coefficient of $V$ was negative in every family, and the CGF predictor gained value at longer horizons. Simulated classes are atomic actions, so this supports running the experiment; it is not evidence about language models.
 
 \section{Experimental design}\label{sec:design}
-\subsection{Task, error modes and the reference distribution}
+\subsection{Task, error modes and construct validation}
 The base model is Qwen2.5-0.5B-Instruct \citep{qwen2024qwen} at a pinned revision, asked to add two five-digit integers with an answer-only prompt.
 Wrong answers are partitioned by how they differ from the true sum $S$: \textsf{LEN} (wrong digit count, including negatives), \textsf{ONE\_HI}/\textsf{ONE\_LO} (exactly one wrong digit in the high/low half), \textsf{MULTI} (two or more wrong digits), and \textsf{I} (unparseable).
 This outcome-based partition (Amendment~1) replaced a pre-registered \emph{mechanism} taxonomy (dropped carry, transposition, \ldots) after that taxonomy reached its stop rule: 55--97\% of wrong answers matched no named mechanism across 24 censuses. The amendment and its timing are disclosed; its confirmatory census used operands never generated before.
@@ -127,7 +128,11 @@ H3: the same comparison for the CGF plug-in $Z(s)$ ($s$ chosen by cross-validati
 Holm adjustment over H1--H3; ICC between configuration and seed; exploratory comparison of every registered predictor across both arms.
 The registration (\url{https://osf.io/bs3wq/}) was recorded before the first confirmatory run started.
 
+\subsection{Deviations and post-registration analyses}
+No registered hypothesis, outcome, unit, test, threshold, seed, configuration or exclusion rule was changed, and no run was excluded. Four things were added after the data and are labelled wherever they appear: (i) the coefficient $b_f$ and the realised verifier rates, which the registration lists but the pre-written analysis driver did not print; (ii) the registered all-arm secondary model, in which $J$ and $J_{\text{worst}}$ (the registered ``conditional advantage'') are exact aliases of the aggregate rate and $\fmax$ because $\tau$ is constant; (iii) the discovery that the registered grid contains duplicated verifiers, with deduplicated sensitivity analyses; and (iv) post hoc comparisons of aggregate rates with dispersion, robustness checks and a description of unusual runs. The scripts for (i)--(iv) were written after the registered analysis had been run (\texttt{experiments/analyse\_grid\_supplement.py}, decision D33 in the repository).
+
 \input{sections/results.tex}
+\input{sections/discussion.tex}
 
 \bibliographystyle{plainnat}
 \bibliography{references}
